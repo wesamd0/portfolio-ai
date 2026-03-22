@@ -17,6 +17,9 @@ type AnimatedPixel = {
   color: string;
 };
 
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 120;
+
 export function PlaceholdersAndVanishInput({
   placeholders,
   onChange,
@@ -29,14 +32,11 @@ export function PlaceholdersAndVanishInput({
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
 
   useEffect(() => {
-    const startAnimation = () => {
-      const interval = setInterval(() => {
-        setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
-      }, 1500);
-      return () => clearInterval(interval);
-    };
+    const interval = setInterval(() => {
+      setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
+    }, 1500);
 
-    startAnimation();
+    return () => clearInterval(interval);
   }, [placeholders.length]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -52,23 +52,23 @@ export function PlaceholdersAndVanishInput({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = 800;
-    canvas.height = 800;
-    ctx.clearRect(0, 0, 800, 800);
+    canvas.width = CANVAS_WIDTH;
+    canvas.height = CANVAS_HEIGHT;
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     const computedStyles = getComputedStyle(inputRef.current);
 
     const fontSize = parseFloat(computedStyles.getPropertyValue("font-size"));
     ctx.font = `${fontSize * 2}px ${computedStyles.fontFamily}`;
     ctx.fillStyle = "#FFF";
-    ctx.fillText(value, 16, 40);
+    ctx.fillText(value, 16, 36);
 
-    const imageData = ctx.getImageData(0, 0, 800, 800);
+    const imageData = ctx.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     const pixelData = imageData.data;
     const newData: PixelDataPoint[] = [];
 
-    for (let t = 0; t < 800; t++) {
-      const rowOffset = 4 * t * 800;
-      for (let n = 0; n < 800; n++) {
+    for (let t = 0; t < CANVAS_HEIGHT; t++) {
+      const rowOffset = 4 * t * CANVAS_WIDTH;
+      for (let n = 0; n < CANVAS_WIDTH; n++) {
         const pixelOffset = rowOffset + 4 * n;
         if (
           pixelData[pixelOffset] !== 0 &&
@@ -123,7 +123,7 @@ export function PlaceholdersAndVanishInput({
         newDataRef.current = newArr;
         const ctx = canvasRef.current?.getContext("2d");
         if (ctx) {
-          ctx.clearRect(pos, 0, 800, 800);
+          ctx.clearRect(pos, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
           newDataRef.current.forEach((t) => {
             const { x: n, y: i, r: s, color: color } = t;
             if (n > pos) {
