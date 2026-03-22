@@ -4,109 +4,63 @@ import { Ratelimit } from "@upstash/ratelimit/dist/index.js";
 import { Redis } from "@upstash/redis";
 
 const resumeContextEn = `
-Wesam Dawod
-Laval, Quebec | Phone:[redacted phone] | Email: contact@wesamdawod.com
-LinkedIn: https://www.linkedin.com/in/wesam-dawod | GitHub: https://github.com/wesamd0 | Portfolio: https://wesamdawod.com
+sections.personal_info
+- Wesam Dawod is based in Laval, Quebec. Contact:[redacted phone], contact@wesamdawod.com. Profiles: LinkedIn (wesam-dawod), GitHub (wesamd0), portfolio (wesamdawod.com).
 
-EDUCATION
-- Full-time Software Engineering student (B.Eng.) - Polytechnique Montreal - August 2023 - May 2027
-- Diploma in Pure and Applied Sciences (DEC) - College Montmorency - August 2021 - May 2023
+sections.education
+- B.Eng. Software Engineering student at Polytechnique Montreal (Aug 2023 - May 2027), full-time.
+- DEC in Pure and Applied Sciences at College Montmorency (Aug 2021 - May 2023).
 
-TECHNICAL SKILLS
-- Programming languages: Python, C/C++, Java, Dart, TypeScript, JavaScript, HTML, SCSS, SQL.
-- Web and mobile technologies: Angular, Flutter, Node.js, Tailwind CSS, React, Next.js, Framer Motion.
-- Architecture and data: Design of distributed and real-time systems (Socket.io, WebSockets), AI API integration (GROQ, language models), MongoDB, MySQL, REST, API design.
-- DevOps, tools, and environments: Linux, AWS (Amplify, EC2), Vercel, Git/GitHub/GitLab, Docker, CI/CD, Agile methodology (Scrum), Windows, iOS, Android.
+sections.skills
+- Programming: Python, C/C++, Java, Dart, TypeScript, JavaScript, HTML, SCSS, SQL.
+- Web/mobile stack: Angular, Flutter, Node.js, Tailwind CSS, React, Next.js, Framer Motion.
+- Architecture and data: distributed systems, real-time systems, Socket.io, WebSockets, GROQ API integration, MongoDB, MySQL, REST, API design.
+- DevOps and tooling: Linux, AWS (Amplify, EC2), Vercel, Git/GitHub/GitLab, Docker, CI/CD, Scrum. Platforms: Windows, iOS, Android.
+- Languages: French (fluent), English (professional), Arabic (native).
 
-SOFTWARE ENGINEERING PROJECTS
-- Personal project: Bilingual web portfolio with AI assistant
-  Independent project. (November 2025 - March 2026)
-  - Designed a multi-cloud architecture (Angular/AWS Amplify, Next.js/Vercel) separating static frontend and AI services.
-  - Optimized frontend performance (Angular and Next.js) to reach a Lighthouse score above 95 (Performance, SEO, Accessibility), reducing initial load time by about 40%.
-  - Built an interactive recruiter experience via the GROQ API, structuring a rich system prompt (resume + projects) to generate contextualized real-time streaming responses.
-  - Implemented a bilingual system (FR/EN) via i18n and managed complex state with interactive animations (React, Framer Motion) to ensure a smooth user experience.
+sections.projects
+- Bilingual web portfolio with AI assistant (Nov 2025 - Mar 2026). Designed a multi-cloud architecture across Angular/AWS Amplify and Next.js/Vercel. Integrated GROQ-based real-time streaming Q&A with a structured system prompt from resume and projects.
+- Improved frontend performance for Angular and Next.js, reaching Lighthouse scores above 95 and reducing initial load time by about 40%. Implemented i18n and complex interactive state with React and Framer Motion.
+- LOG3900 (Jan 2026 - May 2026): designed a real-time distributed architecture with Socket.io on AWS, keeping synchronization latency under 100 ms across desktop, mobile, and Node.js backend. Built a cross-platform Flutter app with native sensor integration and responsive touch UX.
+- LOG2990 (Jan 2025 - May 2025): implemented CI/CD with GitLab Pages and AWS EC2 plus Jasmine/Mocha/Chai tests, reducing integration bugs by about 30% and accelerating deployments by 50%. Built full-stack Angular/TypeScript/Node.js/NoSQL features with multiplayer state sync via WebSockets.
+- INF1900 (Jan 2024 - May 2024): developed autonomous robot navigation in C/C++ on Linux with AVR LibC. Optimized memory, timers, and hardware interrupts; integrated distance, infrared, and line-tracking sensors for millisecond-level responses.
 
-- Integrative Project 3 in Software Evolution (LOG3900): Distributed architecture and system maintenance
-  Polytechnique Montreal. (January 2026 - May 2026)
-  - Designed a real-time distributed solution via Socket.io on AWS, synchronizing real-time state (under 100 ms latency) between Desktop clients, Mobile clients, and a Node.js backend.
-  - Developed a cross-platform Flutter (Dart) mobile application, integrating native sensors and converting a complex desktop UX into a responsive touch interface.
-  - Led requirements engineering (SRS) and maintained a strict development budget of about 1000 hours in a commercial simulation framework.
+sections.experience
+- Cook at La Cage Place Bell (Feb 2022 - Jun 2025). Coordinated high-pressure team production and maintained quality while delivering over 100 orders per hour during peak periods.
+- Packer at AGT Clic Foods Inc. (Jun-Aug 2020, Jun-Aug 2021). Collaborated with production teams to meet and exceed daily quotas.
 
-- Integrative Project 2 in Web Application (LOG2990): Tactical role-playing platform development
-  Polytechnique Montreal. (January 2025 - May 2025)
-  - Automated end-to-end development workflows with a CI/CD pipeline (GitLab Pages, AWS EC2) and exhaustive testing (Jasmine, Mocha, Chai), reducing integration bugs by about 30% and accelerating deployments by 50%.
-  - Built a full-stack architecture (Angular, TypeScript, NodeJS, NoSQL) supporting complex application logic.
-  - Implemented real-time synchronization of shared state for multiple players via WebSockets.
-
-- Integrative Project 1 in Embedded Systems (INF1900): Autonomous robot development
-  Polytechnique Montreal. (January 2024 - May 2024)
-  - Programmed autonomous navigation logic in C/C++ (Linux, AVR LibC), optimizing memory, timers, and hardware interrupts.
-  - Integrated and calibrated a sensor suite (distance, infrared, line tracking) to ensure millisecond-level response times during movement.
-
-WORK EXPERIENCE
-- Cook - La Cage Place Bell - February 2022 - June 2025
-  - Coordinated team production under high pressure, ensuring compliant delivery of more than 100 orders per hour during peak periods.
-  - Optimized time management and operational priorities while maintaining strict quality standards.
-- Packer - AGT Clic Foods Inc. - June 2020 - August 2020 and June 2021 - August 2021
-  - Collaborated closely with the production team to meet and exceed daily quotas.
-
-LANGUAGES
-- French (Fluent)
-- English (Professional proficiency)
-- Arabic (Native language)
+sections.certifications
+- None listed.
 `;
 
 const resumeContextFr = `
-Wesam Dawod
-Laval, Quebec | Telephone :[redacted phone] | Adresse courriel : contact@wesamdawod.com
-LinkedIn : https://www.linkedin.com/in/wesam-dawod | GitHub: https://github.com/wesamd0 | Portfolio : https://wesamdawod.com
+sections.personal_info
+- Wesam Dawod est base a Laval, Quebec. Contact:[redacted phone], contact@wesamdawod.com. Profils: LinkedIn (wesam-dawod), GitHub (wesamd0), portfolio (wesamdawod.com).
 
-FORMATION
-- Etudiant a temps plein en genie logiciel (B. Ing.) - Polytechnique Montreal - Aout 2023 - Mai 2027
-- Diplome en sciences de la nature pures et appliquees (DEC) - College Montmorency - Aout 2021 - Mai 2023
+sections.education
+- Etudiant a temps plein au baccalaureat en genie logiciel a Polytechnique Montreal (Aout 2023 - Mai 2027).
+- Diplome d'etudes collegiales (DEC) en sciences de la nature pures et appliquees au College Montmorency (Aout 2021 - Mai 2023).
 
-COMPETENCES TECHNIQUES
-- Langages de programmation : Python, C/C++, Java, Dart, TypeScript, JavaScript, HTML, SCSS, SQL.
-- Technologies web et mobiles : Angular, Flutter, Node.js, Tailwind CSS, React, Next.js, Framer Motion.
-- Architecture et donnees : Conception de systemes distribues et temps reel (Socket.io, WebSockets), integration d'API d'IA (GROQ, modeles de langage), MongoDB, MySQL, REST, API design.
-- DevOps, outils et environnements : Linux, AWS (Amplify, EC2), Vercel, Git/GitHub/GitLab, Docker, CI/CD, methodologie Agile (Scrum), Windows, iOS, Android.
+sections.skills
+- Programmation: Python, C/C++, Java, Dart, TypeScript, JavaScript, HTML, SCSS, SQL.
+- Technologies web et mobiles: Angular, Flutter, Node.js, Tailwind CSS, React, Next.js, Framer Motion.
+- Architecture et donnees: systemes distribues et temps reel, Socket.io, WebSockets, integration API GROQ, MongoDB, MySQL, REST, conception d'API.
+- DevOps et environnements: Linux, AWS (Amplify, EC2), Vercel, Git/GitHub/GitLab, Docker, CI/CD, Scrum. Plateformes: Windows, iOS, Android.
+- Langues: Francais (courant), Anglais (maitrise professionnelle), Arabe (langue maternelle).
 
-PROJETS EN INGENIERIE LOGICIELLE
-- Projet personnel : Portfolio web bilingue avec assistant IA
-  Projet independant. (Novembre 2025 - Mars 2026)
-  - Concevoir une architecture multi-cloud (Angular/AWS Amplify, Next.js/Vercel) separant frontend statique et services IA.
-  - Optimiser les performances front-end (Angular et Next.js) pour atteindre un score Lighthouse >95 (Performance, SEO, Accessibilite), reduisant le temps de chargement initial d'environ 40%.
-  - Developper une experience interactive pour les recruteurs via l'API GROQ, en structurant un prompt systeme riche (CV + projets) pour generer des reponses contextualisees en temps reel (streaming).
-  - Implementer un systeme bilingue (FR/EN) via i18n et gerer des etats complexes avec des animations interactives (React, Framer Motion) pour assurer une experience utilisateur fluide.
+sections.projects
+- Projet personnel portfolio web bilingue avec assistant IA (Novembre 2025 - Mars 2026). Conception d'une architecture multi-cloud Angular/AWS Amplify et Next.js/Vercel. Integration d'un chatbot en streaming temps reel via API GROQ avec prompt systeme structure (CV + projets).
+- Optimisation front-end Angular et Next.js avec score Lighthouse superieur a 95 et reduction du temps de chargement initial d'environ 40%. Mise en place d'i18n et gestion d'etats interactifs complexes avec React et Framer Motion.
+- LOG3900 (Janvier 2026 - Mai 2026): conception d'une architecture distribuee temps reel Socket.io sur AWS avec latence inferieure a 100 ms entre clients desktop, mobile et backend Node.js. Developpement d'une application Flutter multiplateforme avec capteurs natifs et UX tactile reactive.
+- LOG2990 (Janvier 2025 - Mai 2025): automatisation CI/CD avec GitLab Pages et AWS EC2, plus tests Jasmine/Mocha/Chai, reduisant les bogues d'integration d'environ 30% et accelerant les deploiements de 50%. Construction d'une architecture full stack Angular/TypeScript/NodeJS/NoSQL avec synchronisation multijoueur via WebSockets.
+- INF1900 (Janvier 2024 - Mai 2024): programmation d'un robot autonome en C/C++ sous Linux avec AVR LibC. Optimisation memoire, minuteries et interruptions materielles; integration de capteurs distance, infrarouge et suivi de ligne pour des reponses en millisecondes.
 
-- Projet integrateur 3 en evolution logicielle (LOG3900) : Architecture distribuee et maintenance de systeme
-  Polytechnique Montreal. (Janvier 2026 - Mai 2026)
-  - Concevoir une solution distribuee en temps reel via Socket.io sur AWS, synchronisant les etats temps reel (<100 ms de latence) entre clients Desktop, Mobile et backend Node.js.
-  - Developper une application mobile multiplateforme en Flutter (Dart), integrant la gestion des capteurs natifs et convertissant une UX Desktop complexe en une interface tactile reactive.
-  - Piloter l'ingenierie des exigences (SRS) et respecter un budget strict d'environ 1000 heures de developpement dans un cadre de simulation commerciale.
+sections.experience
+- Cuisinier a La Cage Place Bell (Fevrier 2022 - Juin 2025). Coordination de la production en equipe sous pression avec maintien de la qualite et livraison de plus de 100 commandes par heure en periode de pointe.
+- Emballeur chez AGT Clic Foods Inc. (Juin-Aout 2020, Juin-Aout 2021). Collaboration avec l'equipe de production pour atteindre et depasser les quotas journaliers.
 
-- Projet integrateur 2 en application web (LOG2990) : Developpement d'une plateforme de jeu de role tactique
-  Polytechnique Montreal. (Janvier 2025 - Mai 2025)
-  - Automatiser l'entiere des flux de developpement avec un pipeline CI/CD (GitLab Pages, AWS EC2) et des tests exhaustifs (Jasmine, Mocha, Chai), reduisant drastiquement les bogues d'integration d'environ 30% et accelerant les deploiements de 50%.
-  - Construire une architecture full stack (Angular, TypeScript, NodeJS, NoSQL) gerant une logique applicative complexe.
-  - Implementer la synchronisation temps reel des etats partages pour plusieurs joueurs via WebSockets.
-
-- Projet integrateur 1 en systeme embarque (INF1900) : Developpement d'un robot autonome
-  Polytechnique Montreal. (Janvier 2024 - Mai 2024)
-  - Programmer la logique de navigation autonome en C/C++ (Linux, AVR LibC), en optimisant la gestion de la memoire, des minuteries et des interruptions materielles.
-  - Integrer et calibrer une suite de capteurs (distance, infrarouge, suivi de lignes) pour assurer des temps de reponse en millisecondes lors des deplacements.
-
-EXPERIENCE DE TRAVAIL
-- Cuisinier - La Cage Place Bell. - Fevrier 2022 - Juin 2025
-  - Coordonner la production en equipe sous haute pression, assurant la livraison conforme de plus de 100 commandes par heure lors des pics d'achalandage.
-  - Optimiser la gestion du temps et des priorites operationnelles en maintenant des standards de qualite stricts.
-- Emballeur - AGT Clic Foods Inc. - Juin 2020 - Aout 2020 et Juin 2021 - Aout 2021
-  - Collaborer etroitement avec l'equipe de production pour atteindre et depasser les quotas journaliers fixes.
-
-LANGUES
-- Francais (Courant)
-- Anglais (Maitrise professionnelle)
-- Arabe (Langue maternelle)
+sections.certifications
+- Aucune certification indiquee.
 `;
 
 const systemPromptTemplate = `
