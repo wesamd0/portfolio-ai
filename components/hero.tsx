@@ -310,8 +310,8 @@ export function Hero() {
       </div>
 
       <section className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center gap-8 text-center">
-        <div className="flex w-full flex-wrap items-center justify-between gap-3 border border-white/10 bg-black/30 px-4 py-2 text-[0.68rem] uppercase tracking-[0.34em] text-white/52">
-          <div className="font-mono flex items-center gap-3">
+        <div className="flex w-full flex-col items-center gap-3 border border-white/10 bg-black/30 px-4 py-2 text-[0.68rem] uppercase tracking-[0.34em] text-white/52 sm:flex-row sm:justify-between">
+          <div className="font-mono flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center sm:justify-start sm:text-left">
             <span className="font-display text-[#73e9ff]">AI</span>
             <ScrambleText text={copy.topLabel} />
           </div>
@@ -322,7 +322,7 @@ export function Hero() {
                 key={nextLocale}
                 type="button"
                 onClick={() => handleLocaleChange(nextLocale)}
-                className={`relative isolate min-w-[82px] rounded-[7px] px-3 py-2 font-mono transition ${
+                className={`relative isolate min-w-[64px] rounded-[7px] px-2.5 py-1.5 font-mono transition sm:min-w-[82px] sm:px-3 sm:py-2 ${
                   locale === nextLocale
                     ? "text-[#081018]"
                     : "text-white/55 hover:text-white"
