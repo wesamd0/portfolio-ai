@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 28% 7%;
+    --foreground: 210 33% 96%;
+
+    --card: 222 24% 10%;
+    --card-foreground: 210 33% 96%;
+
+    --popover: 222 24% 10%;
+    --popover-foreground: 210 33% 96%;
+
+    --primary: 191 100% 74%;
+    --primary-foreground: 222 33% 7%;
+
+    --secondary: 222 19% 16%;
+    --secondary-foreground: 210 20% 84%;
+
+    --muted: 222 19% 14%;
+    --muted-foreground: 215 14% 64%;
+
+    --accent: 222 19% 14%;
+    --accent-foreground: 210 33% 96%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 221 18% 20%;
+    --input: 221 18% 20%;
+    --ring: 191 100% 74%;
+
+    --radius: 0.875rem;
+  }
+
+  .dark {
+    --background: 222 28% 7%;
+    --foreground: 210 33% 96%;
+
+    --card: 222 24% 10%;
+    --card-foreground: 210 33% 96%;
+
+    --popover: 222 24% 10%;
+    --popover-foreground: 210 33% 96%;
+
+    --primary: 191 100% 74%;
+    --primary-foreground: 222 33% 7%;
+
+    --secondary: 222 19% 16%;
+    --secondary-foreground: 210 20% 84%;
+
+    --muted: 222 19% 14%;
+    --muted-foreground: 215 14% 64%;
+
+    --accent: 222 19% 14%;
+    --accent-foreground: 210 33% 96%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 221 18% 20%;
+    --input: 221 18% 20%;
+    --ring: 191 100% 74%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth !important;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-geist-sans), sans-serif;
+    background-color: #090d14;
+    background-image: radial-gradient(
+      circle at top,
+      rgba(115, 233, 255, 0.12),
+      transparent 34%
+    );
+    background-position: center top;
+    background-size: auto;
+    color: #f4f7fb;
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    transition-property: color, background-color, border-color, opacity, transform,
+      box-shadow;
+    transition-duration: 180ms;
+  }
+
+  ::selection {
+    background: rgba(115, 233, 255, 0.28);
+    color: #f4f7fb;
+  }
+
+  .font-gambarino {
+    font-family: var(--font-geist-pixel-square), monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .font-display {
+    font-family: var(--font-geist-pixel-square), monospace;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .font-mono {
+    font-family: var(--font-geist-mono), monospace;
+  }
+}
