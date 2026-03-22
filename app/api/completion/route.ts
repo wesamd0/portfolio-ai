@@ -9,52 +9,46 @@ Laval, Quebec | Phone: (438) 334-6668 | Email: wesamd2003@gmail.com
 LinkedIn: https://www.linkedin.com/in/wesam-dawod | GitHub: https://github.com/wesamd0 | Portfolio: https://wesamdawod.com
 
 EDUCATION
-- Full-time Software Engineering student - Polytechnique Montreal - August 2023 - May 2027
+- Full-time Software Engineering student (B.Eng.) - Polytechnique Montreal - August 2023 - May 2027
 - Diploma in Pure and Applied Sciences (DEC) - College Montmorency - August 2021 - May 2023
 
-SKILLS
-- Programming languages: Python, C/C++, Java, HTML/CSS, Angular/TypeScript, JavaScript/React, SQL, Flutter/Dart
-- Software engineering skills:
-  - Architecture and design: Distributed systems design (Client-Server) and embedded real-time systems, object-oriented programming (OOP), UML modeling.
-  - Methodologies and DevOps: Agile project management (Scrum), CI/CD pipeline implementation, testing strategies (Unit/Integration), and requirements engineering (SRS).
-  - Development and data: Mobile application development (Android/Cross-platform) and full-stack web development, relational database (SQL) and NoSQL management, and interface prototyping (Figma).
-- Environments: iOS, Android, Linux, macOS, Windows.
-- Development tools: Visual Studio Code, Visual Studio, JetBrains tools (PyCharm, IntelliJ), Git/GitHub/GitLab, AWS, MongoDB, MySQL, Docker.
+TECHNICAL SKILLS
+- Programming languages: Python, C/C++, Java, Dart, TypeScript, JavaScript, HTML, SCSS, SQL.
+- Web and mobile technologies: Angular, Flutter, Node.js, Tailwind CSS, React, Next.js, Framer Motion.
+- Architecture and data: Design of distributed and real-time systems (Socket.io, WebSockets), AI API integration (GROQ, language models), MongoDB, MySQL, REST, API design.
+- DevOps, tools, and environments: Linux, AWS (Amplify, EC2), Vercel, Git/GitHub/GitLab, Docker, CI/CD, Agile methodology (Scrum), Windows, iOS, Android.
 
-PROJECTS
-- Integrative Project 3 in Software Evolution: Distributed Architecture and System Maintenance
+SOFTWARE ENGINEERING PROJECTS
+- Personal project: Bilingual web portfolio with AI assistant
+  Independent project. (November 2025 - March 2026)
+  - Designed a multi-cloud architecture (Angular/AWS Amplify, Next.js/Vercel) separating static frontend and AI services.
+  - Optimized frontend performance (Angular and Next.js) to reach a Lighthouse score above 95 (Performance, SEO, Accessibility), reducing initial load time by about 40%.
+  - Built an interactive recruiter experience via the GROQ API, structuring a rich system prompt (resume + projects) to generate contextualized real-time streaming responses.
+  - Implemented a bilingual system (FR/EN) via i18n and managed complex state with interactive animations (React, Framer Motion) to ensure a smooth user experience.
+
+- Integrative Project 3 in Software Evolution (LOG3900): Distributed architecture and system maintenance
   Polytechnique Montreal. (January 2026 - May 2026)
-  - Architected a real-time distributed solution (Socket.io) on AWS, synchronizing Desktop and Mobile clients.
-  - Developed the mobile application (Dart / Flutter) by integrating native sensors and reactive state management.
-  - Adapted a complex desktop UX to an intuitive touch-based mobile interface.
-  - Implemented the backend server (Node.js) handling legacy and new feature logic and persistence.
-  - Led requirements engineering (SRS) and budget tracking (~1000h) within a strict commercial framework.
+  - Designed a real-time distributed solution via Socket.io on AWS, synchronizing real-time state (under 100 ms latency) between Desktop clients, Mobile clients, and a Node.js backend.
+  - Developed a cross-platform Flutter (Dart) mobile application, integrating native sensors and converting a complex desktop UX into a responsive touch interface.
+  - Led requirements engineering (SRS) and maintained a strict development budget of about 1000 hours in a commercial simulation framework.
 
-- Personal project: Interactive digital portfolio development
-  Independent project. (November 2025 - February 2026)
-  - Designed a responsive interface (HTML5, SCSS, Tailwind) to structure technical project presentation through visual evidence and specifications.
-  - Configured continuous deployment (CI/CD) and hosting via AWS Amplify, ensuring media optimization.
-
-- Integrative Project 2 in Web Application: Tactical role-playing game platform development
+- Integrative Project 2 in Web Application (LOG2990): Tactical role-playing platform development
   Polytechnique Montreal. (January 2025 - May 2025)
-  - Designed and developed the front end (HTML5, CSS, TypeScript, Angular) and back end (NodeJS, WebSocket, NoSQL).
-  - Automated development workflows via a full CI/CD pipeline (GitLab Pages, AWS EC2) and implemented extensive unit tests (Jasmine, Mocha, Chai), significantly reducing integration bugs and deployment time.
-  - Ensured code quality in an Agile (Scrum) team through weekly meetings, systematic merge request validation, and sprint tracking.
-  - Implemented complex application logic and real-time shared state management with Socket.io.
+  - Automated end-to-end development workflows with a CI/CD pipeline (GitLab Pages, AWS EC2) and exhaustive testing (Jasmine, Mocha, Chai), reducing integration bugs by about 30% and accelerating deployments by 50%.
+  - Built a full-stack architecture (Angular, TypeScript, NodeJS, NoSQL) supporting complex application logic.
+  - Implemented real-time synchronization of shared state for multiple players via WebSockets.
 
-- Integrative Project 1 in Embedded Systems: Autonomous robot development
+- Integrative Project 1 in Embedded Systems (INF1900): Autonomous robot development
   Polytechnique Montreal. (January 2024 - May 2024)
-  - Designed and developed a hardware/software system based on an AVR microcontroller board.
-  - Programmed in C/C++ on Linux with timer and interrupt management via AVR LibC.
-  - Implemented sensors (distance, infrared, line) to enable autonomous navigation.
-  - Presented the project to an academic audience.
+  - Programmed autonomous navigation logic in C/C++ (Linux, AVR LibC), optimizing memory, timers, and hardware interrupts.
+  - Integrated and calibrated a sensor suite (distance, infrared, line tracking) to ensure millisecond-level response times during movement.
 
 WORK EXPERIENCE
 - Cook - La Cage Place Bell - February 2022 - June 2025
-  - Managed time and priorities effectively in a high-volume, fast-paced environment, coordinating with kitchen staff to deliver over 100 orders per hour while maintaining strict quality standards.
-  - Communicated and coordinated effectively within the team to ensure dish quality and compliance.
+  - Coordinated team production under high pressure, ensuring compliant delivery of more than 100 orders per hour during peak periods.
+  - Optimized time management and operational priorities while maintaining strict quality standards.
 - Packer - AGT Clic Foods Inc. - June 2020 - August 2020 and June 2021 - August 2021
-  - Worked in close collaboration with the team, communicating priorities to meet production quotas.
+  - Collaborated closely with the production team to meet and exceed daily quotas.
 
 LANGUAGES
 - French (Fluent)
@@ -68,52 +62,46 @@ Laval, Quebec | Telephone : (438) 334-6668 | Adresse courriel : wesamd2003@gmail
 LinkedIn : https://www.linkedin.com/in/wesam-dawod | GitHub: https://github.com/wesamd0 | Portfolio : https://wesamdawod.com
 
 FORMATION
-- Etudiant a temps plein en genie logiciel - Polytechnique Montreal - Aout 2023 - Mai 2027
+- Etudiant a temps plein en genie logiciel (B. Ing.) - Polytechnique Montreal - Aout 2023 - Mai 2027
 - Diplome en sciences de la nature pures et appliquees (DEC) - College Montmorency - Aout 2021 - Mai 2023
 
-COMPETENCES
-- Langages de programmation : Python, C/C++, Java, HTML/CSS, Angular/TypeScript, JavaScript/React, SQL, Flutter/Dart
-- Competences en genie logiciel :
-  - Architecture et conception : Conception de systemes distribues (Client-Serveur) et embarques temps reel, programmation orientee objet (POO), modelisation UML.
-  - Methodologies et DevOps : Gestion de projet Agile (Scrum), mise en place de pipelines d'integration continue (CI/CD), strategies de tests (Unitaires/Integration) et ingenierie des exigences (SRS).
-  - Developpement et donnees : Developpement d'applications mobiles (Android/Cross-platform) et web full stack, gestion de bases de donnees relationnelles (SQL) et NoSQL, et prototypage d'interfaces (Figma).
-- Environnements : iOS, Android, Linux, macOS, Windows.
-- Outils de developpement : Visual Studio Code, Visual Studio, outils JetBrains (PyCharm, IntelliJ), Git/GitHub/GitLab, AWS, MongoDB, MySQL et Docker.
+COMPETENCES TECHNIQUES
+- Langages de programmation : Python, C/C++, Java, Dart, TypeScript, JavaScript, HTML, SCSS, SQL.
+- Technologies web et mobiles : Angular, Flutter, Node.js, Tailwind CSS, React, Next.js, Framer Motion.
+- Architecture et donnees : Conception de systemes distribues et temps reel (Socket.io, WebSockets), integration d'API d'IA (GROQ, modeles de langage), MongoDB, MySQL, REST, API design.
+- DevOps, outils et environnements : Linux, AWS (Amplify, EC2), Vercel, Git/GitHub/GitLab, Docker, CI/CD, methodologie Agile (Scrum), Windows, iOS, Android.
 
-PROJETS
-- Projet integrateur 3 en evolution logicielle : Architecture distribuee et maintenance de systeme
+PROJETS EN INGENIERIE LOGICIELLE
+- Projet personnel : Portfolio web bilingue avec assistant IA
+  Projet independant. (Novembre 2025 - Mars 2026)
+  - Concevoir une architecture multi-cloud (Angular/AWS Amplify, Next.js/Vercel) separant frontend statique et services IA.
+  - Optimiser les performances front-end (Angular et Next.js) pour atteindre un score Lighthouse >95 (Performance, SEO, Accessibilite), reduisant le temps de chargement initial d'environ 40%.
+  - Developper une experience interactive pour les recruteurs via l'API GROQ, en structurant un prompt systeme riche (CV + projets) pour generer des reponses contextualisees en temps reel (streaming).
+  - Implementer un systeme bilingue (FR/EN) via i18n et gerer des etats complexes avec des animations interactives (React, Framer Motion) pour assurer une experience utilisateur fluide.
+
+- Projet integrateur 3 en evolution logicielle (LOG3900) : Architecture distribuee et maintenance de systeme
   Polytechnique Montreal. (Janvier 2026 - Mai 2026)
-  - Architecturer une solution distribuee temps reel (Socket.io) sur AWS, synchronisant les clients Desktop et Mobile.
-  - Developper l'application mobile (Dart / Flutter) en integrant les capteurs natifs et une gestion d'etats reactive.
-  - Adapter une experience utilisateur (UX) complexe du format Desktop vers une interface tactile mobile intuitive.
-  - Implementer le serveur backend (Node.js) gerant la logique des anciennes et nouvelles fonctionnalites et la persistance.
-  - Piloter l'ingenierie des exigences (SRS) et le suivi budgetaire (~1000h) selon un cadre commercial strict.
+  - Concevoir une solution distribuee en temps reel via Socket.io sur AWS, synchronisant les etats temps reel (<100 ms de latence) entre clients Desktop, Mobile et backend Node.js.
+  - Developper une application mobile multiplateforme en Flutter (Dart), integrant la gestion des capteurs natifs et convertissant une UX Desktop complexe en une interface tactile reactive.
+  - Piloter l'ingenierie des exigences (SRS) et respecter un budget strict d'environ 1000 heures de developpement dans un cadre de simulation commerciale.
 
-- Projet personnel en developpement d'un portfolio numerique interactif
-  Projet independant. (Novembre 2025 - Fevrier 2026)
-  - Concevoir une interface reactive (HTML5, SCSS, Tailwind) structurant la presentation technique des projets via des preuves visuelles et specifications.
-  - Configurer le deploiement continu (CI/CD) et l'hebergement via AWS Amplify, en assurant l'optimisation des medias.
-
-- Projet integrateur 2 en application web : Developpement d'une plateforme de jeu de role tactique
+- Projet integrateur 2 en application web (LOG2990) : Developpement d'une plateforme de jeu de role tactique
   Polytechnique Montreal. (Janvier 2025 - Mai 2025)
-  - Concevoir et developper le front-end (HTML5, CSS, TypeScript, Angular) et le back-end (NodeJS, WebSocket, NoSQL).
-  - Automatiser les flux de developpement via un pipeline CI/CD complet (GitLab Pages, AWS EC2) et implementer des tests unitaires exhaustifs (Jasmine, Mocha, Chai), reduisant considerablement les bogues d'integration et les temps de deploiement.
-  - Assurer la qualite du code en equipe Agile (Scrum) grace a des rencontres hebdomadaires et la validation systematique des demandes de fusion (Merge Requests) et le suivi des sprints.
-  - Implementer la logique applicative complexe et la gestion d'etats partages en temps reel via Socket.io.
+  - Automatiser l'entiere des flux de developpement avec un pipeline CI/CD (GitLab Pages, AWS EC2) et des tests exhaustifs (Jasmine, Mocha, Chai), reduisant drastiquement les bogues d'integration d'environ 30% et accelerant les deploiements de 50%.
+  - Construire une architecture full stack (Angular, TypeScript, NodeJS, NoSQL) gerant une logique applicative complexe.
+  - Implementer la synchronisation temps reel des etats partages pour plusieurs joueurs via WebSockets.
 
-- Projet integrateur 1 en systeme embarque : Developpement d'un robot autonome
+- Projet integrateur 1 en systeme embarque (INF1900) : Developpement d'un robot autonome
   Polytechnique Montreal. (Janvier 2024 - Mai 2024)
-  - Concevoir et developper un systeme materiel et logiciel base sur une carte a microcontroleur AVR.
-  - Programmer en C/C++ sous Linux en integrant la gestion des minuteries et interruptions via AVR LibC.
-  - Implementer des capteurs (distance, infrarouge, lignes) pour permettre la navigation autonome.
-  - Presenter le projet devant un auditoire academique.
+  - Programmer la logique de navigation autonome en C/C++ (Linux, AVR LibC), en optimisant la gestion de la memoire, des minuteries et des interruptions materielles.
+  - Integrer et calibrer une suite de capteurs (distance, infrarouge, suivi de lignes) pour assurer des temps de reponse en millisecondes lors des deplacements.
 
 EXPERIENCE DE TRAVAIL
 - Cuisinier - La Cage Place Bell. - Fevrier 2022 - Juin 2025
-  - Gerer efficacement le temps et les priorites dans un environnement a rythme soutenu et a fort volume, en se coordonnant avec le personnel de cuisine pour livrer plus de 100 commandes par heure tout en maintenant des normes de qualite strictes.
-  - Communiquer et coordonner efficacement en equipe pour assurer la qualite et la conformite des plats.
+  - Coordonner la production en equipe sous haute pression, assurant la livraison conforme de plus de 100 commandes par heure lors des pics d'achalandage.
+  - Optimiser la gestion du temps et des priorites operationnelles en maintenant des standards de qualite stricts.
 - Emballeur - AGT Clic Foods Inc. - Juin 2020 - Aout 2020 et Juin 2021 - Aout 2021
-  - Travailler en collaboration etroite avec l'equipe, en communiquant les priorites pour atteindre les quotas de production fixes.
+  - Collaborer etroitement avec l'equipe de production pour atteindre et depasser les quotas journaliers fixes.
 
 LANGUES
 - Francais (Courant)
