@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: "Wesam Dawod",
   description:
     "Wesam Dawod is a software engineering student building web, mobile, and distributed systems.",
+  icons: {
+    icon: "/letter-w.png",
+    shortcut: "/letter-w.png",
+    apple: "/letter-w.png",
+  },
 };
 
 export default function RootLayout({
