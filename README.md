@@ -1,1 +1,1 @@
-# persona-site
+# personal-site
