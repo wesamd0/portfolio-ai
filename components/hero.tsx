@@ -173,6 +173,14 @@ function ScrambleText({
   const [display, setDisplay] = useState(text);
 
   useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      setDisplay(text);
+      return;
+    }
+
     let frame = 0;
     const totalFrames = Math.min(Math.max(Math.floor(text.length * 0.45) + 4, 7), 14);
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -242,6 +250,7 @@ export function Hero() {
   const searchParams = useSearchParams();
   const [locale, setLocale] = useState<Locale>("en");
   const [text, setText] = useState("");
+  const [enableVisualFx, setEnableVisualFx] = useState(false);
   const copy = content[locale];
   const projects = getProjects(locale);
   const {
@@ -262,7 +271,26 @@ export function Hero() {
   });
 
   useEffect(() => {
-    fetch("/api/completion").catch(() => {});
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const motionMedia = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const updateVisualFx = () => {
+      const desktopViewport = window.innerWidth >= 768;
+      setEnableVisualFx(desktopViewport && !motionMedia.matches);
+    };
+
+    updateVisualFx();
+
+    window.addEventListener("resize", updateVisualFx);
+    motionMedia.addEventListener("change", updateVisualFx);
+
+    return () => {
+      window.removeEventListener("resize", updateVisualFx);
+      motionMedia.removeEventListener("change", updateVisualFx);
+    };
   }, []);
 
   useEffect(() => {
@@ -299,14 +327,16 @@ export function Hero() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(115,233,255,0.12),transparent_34%)]" />
         <div className="absolute left-1/2 top-0 h-80 w-80 -translate-x-1/2 rounded-full bg-[#73e9ff]/8 blur-3xl" />
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#73e9ff]/40 to-transparent" />
-        <FlickeringGrid
-          className="absolute inset-0 size-full opacity-18 [mask-image:radial-gradient(circle_at_top,black_18%,transparent_62%)]"
-          squareSize={4}
-          gridGap={10}
-          color="#73e9ff"
-          maxOpacity={0.1}
-          flickerChance={0.04}
-        />
+        {enableVisualFx ? (
+          <FlickeringGrid
+            className="absolute inset-0 size-full opacity-18 [mask-image:radial-gradient(circle_at_top,black_18%,transparent_62%)]"
+            squareSize={4}
+            gridGap={10}
+            color="#73e9ff"
+            maxOpacity={0.1}
+            flickerChance={0.04}
+          />
+        ) : null}
       </div>
 
       <section className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center gap-8 text-center">
