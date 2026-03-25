@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, Github } from "lucide-react";
 import { getProjectBySlug, getProjectSlugs, type Locale } from "@/lib/projects";
 
 type PageProps = {
@@ -61,8 +61,12 @@ export default async function ProjectPage({ params, searchParams }: PageProps) {
           projectDetail: "Details du projet",
           year: "Annee",
           stack: "Stack",
-          live: "Lien",
-          openOriginal: "Ouvrir l'original",
+          links: "Liens",
+          github: "GitHub",
+          deployed: "Deploiement",
+          comingSoon: "Bientot disponible",
+          openGithub: "Ouvrir GitHub",
+          openDeployed: "Ouvrir la version deployee",
           overview: "Vue d'ensemble",
           notes: "Notes",
           challenge: "Challenge",
@@ -75,8 +79,12 @@ export default async function ProjectPage({ params, searchParams }: PageProps) {
           projectDetail: "Project Detail",
           year: "Year",
           stack: "Stack",
-          live: "Live",
-          openOriginal: "Open original",
+          links: "Links",
+          github: "GitHub",
+          deployed: "Deployment",
+          comingSoon: "Coming soon",
+          openGithub: "Open GitHub",
+          openDeployed: "Open deployed app",
           overview: "Overview",
           notes: "Notes",
           challenge: "Challenge",
@@ -134,17 +142,38 @@ export default async function ProjectPage({ params, searchParams }: PageProps) {
                 </dd>
               </div>
               <div className="flex items-start justify-between gap-6">
-                <dt className="text-white/45">{copy.live}</dt>
-                <dd className="text-right">
-                  <a
-                    href={project.liveUrl}
-                    className="inline-flex items-center gap-2 text-[#73e9ff] underline decoration-[#73e9ff]/25 underline-offset-4 hover:decoration-[#73e9ff]"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {copy.openOriginal}
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
+                <dt className="text-white/45">{copy.links}</dt>
+                <dd className="flex flex-col items-end gap-2 text-right">
+                  {project.githubUrl ? (
+                    <a
+                      href={project.githubUrl}
+                      className="inline-flex items-center gap-2 text-[#73e9ff] underline decoration-[#73e9ff]/25 underline-offset-4 hover:decoration-[#73e9ff]"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {copy.openGithub}
+                      <Github className="h-4 w-4" />
+                    </a>
+                  ) : project.slug === "distributed-mobile-cross-play-ecosystem" ? (
+                    <span className="text-white/55">
+                      {copy.github}: {copy.comingSoon}
+                    </span>
+                  ) : null}
+                  {project.deployedUrl ? (
+                    <a
+                      href={project.deployedUrl}
+                      className="inline-flex items-center gap-2 text-[#73e9ff] underline decoration-[#73e9ff]/25 underline-offset-4 hover:decoration-[#73e9ff]"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {copy.openDeployed}
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  ) : project.slug === "distributed-mobile-cross-play-ecosystem" ? (
+                    <span className="text-white/55">
+                      {copy.deployed}: {copy.comingSoon}
+                    </span>
+                  ) : null}
                 </dd>
               </div>
             </dl>
