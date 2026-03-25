@@ -178,7 +178,7 @@ const projects = [
   {
     slug: "portfolio-ai",
     year: "2026",
-    githubUrl: "https://github.com/wesamd0/personal-site",
+    githubUrl: "https://github.com/wesamd0/portfolio-ai",
     en: {
       title: "AI-Enhanced Portfolio & Personal Brand",
       category: "Full Stack / AI / Personal Brand",
@@ -297,8 +297,8 @@ const projects = [
   {
     slug: "portfolio-classic",
     year: "2024",
-    githubUrl: "https://github.com/wesamd0/portfolio",
-    deployedUrl: "https://wesamdawod.com",
+    githubUrl: "https://github.com/wesamd0/portfolio-v1",
+    deployedUrl: "https://v1.wesamdawod.com",
     en: {
       title: "Classic Angular Portfolio",
       category: "Frontend / Angular / Multi-Route",
