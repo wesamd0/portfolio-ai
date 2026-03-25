@@ -33,7 +33,7 @@ const socialLinks = [
       en: "Email",
       fr: "Courriel",
     },
-    href: "mailto:wesamd2003@gmail.com",
+    href: "mailto:contact@wesamdawod.com",
     icon: Mail,
   },
 ];
