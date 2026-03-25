@@ -48,8 +48,6 @@ const projects = [
   {
     slug: "distributed-mobile-cross-play-ecosystem",
     year: "2026",
-    githubUrl: "https://github.com/wesamd0",
-    deployedUrl: "https://wesamdawod.com/rpg-evolution",
     en: {
       title: "Distributed & Mobile Cross-Play Ecosystem",
       category: "Systems / Mobile / Realtime",
@@ -93,8 +91,8 @@ const projects = [
   {
     slug: "multiplayer-tactical-rpg",
     year: "2025",
-    githubUrl: "https://github.com/wesamd0",
-    deployedUrl: "https://wesamdawod.com/rpg",
+    githubUrl: "https://github.com/wesamd0/tactical-rpg-web",
+    deployedUrl: "http://polytechnique-montr-al.gitlab.io/log2990/20251/equipe-312/log2990-312/#/home",
     en: {
       title: "Multiplayer Tactical RPG",
       category: "Full Stack / Multiplayer / CI/CD",
@@ -138,8 +136,7 @@ const projects = [
   {
     slug: "autonomous-navigation-robot",
     year: "2024",
-    githubUrl: "https://github.com/wesamd0",
-    deployedUrl: "https://wesamdawod.com/robot",
+    githubUrl: "https://github.com/wesamd0/avr-autonomous-robot",
     en: {
       title: "Autonomous Navigation Robot",
       category: "Embedded / Robotics / Navigation",
@@ -300,7 +297,7 @@ const projects = [
   {
     slug: "portfolio-classic",
     year: "2024",
-    githubUrl: "https://github.com/wesamd0",
+    githubUrl: "https://github.com/wesamd0/portfolio",
     deployedUrl: "https://wesamdawod.com",
     en: {
       title: "Classic Angular Portfolio",
