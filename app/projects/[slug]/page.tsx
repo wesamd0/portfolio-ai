@@ -62,6 +62,9 @@ export default async function ProjectPage({ params, searchParams }: PageProps) {
           year: "Annee",
           stack: "Stack",
           links: "Liens",
+          github: "GitHub",
+          deployed: "Deploiement",
+          comingSoon: "Bientot disponible",
           openGithub: "Ouvrir GitHub",
           openDeployed: "Ouvrir la version deployee",
           overview: "Vue d'ensemble",
@@ -77,6 +80,9 @@ export default async function ProjectPage({ params, searchParams }: PageProps) {
           year: "Year",
           stack: "Stack",
           links: "Links",
+          github: "GitHub",
+          deployed: "Deployment",
+          comingSoon: "Coming soon",
           openGithub: "Open GitHub",
           openDeployed: "Open deployed app",
           overview: "Overview",
@@ -148,6 +154,10 @@ export default async function ProjectPage({ params, searchParams }: PageProps) {
                       {copy.openGithub}
                       <Github className="h-4 w-4" />
                     </a>
+                  ) : project.slug === "distributed-mobile-cross-play-ecosystem" ? (
+                    <span className="text-white/55">
+                      {copy.github}: {copy.comingSoon}
+                    </span>
                   ) : null}
                   {project.deployedUrl ? (
                     <a
@@ -159,6 +169,10 @@ export default async function ProjectPage({ params, searchParams }: PageProps) {
                       {copy.openDeployed}
                       <ExternalLink className="h-4 w-4" />
                     </a>
+                  ) : project.slug === "distributed-mobile-cross-play-ecosystem" ? (
+                    <span className="text-white/55">
+                      {copy.deployed}: {copy.comingSoon}
+                    </span>
                   ) : null}
                 </dd>
               </div>
