@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Wesam Dawod Portfolio
+
+Modern bilingual portfolio built with Next.js, featuring:
+
+- EN/FR language switching
+- Project detail pages with clear technical storytelling
+- AI-powered Q&A assistant with streaming responses
+- Motion-driven UI and responsive design
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- React 19 + TypeScript
+- Tailwind CSS + Framer Motion
+- Vercel AI SDK + GROQ
+- Upstash Redis (optional rate limiting)
+
+## Project Structure
+
+```txt
+app/
+	page.tsx                    # Home page
+	projects/[slug]/page.tsx    # Project detail pages
+	api/completion/route.ts     # AI completion endpoint
+
+components/
+	hero.tsx                    # Main homepage experience
+	ui/*                        # Shared UI primitives
+
+lib/
+	projects.ts                 # Localized project content/data
+```
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Create a local env file:
+
+```bash
+cp .env.example .env.local
+```
+
+If you do not have `.env.example`, create `.env.local` manually with the variables below.
+
+3. Run development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```txt
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Environment Variables
 
-## Learn More
+Required for AI chat:
 
-To learn more about Next.js, take a look at the following resources:
+- `GROQ_API_KEY`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Optional for API rate limiting:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+- `KV_REST_API_URL`
+- `KV_REST_API_TOKEN`
 
-## Deploy on Vercel
+If rate-limit vars are not set, the app still runs and AI chat remains available without Upstash-based limiting.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Scripts
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- `npm run dev` - Start dev server (Turbopack)
+- `npm run build` - Production build
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+## Notes
+
+- Project content and ordering are managed in `lib/projects.ts`.
+- AI endpoint behavior and prompt context are in `app/api/completion/route.ts`.
+- Locale is controlled via query param (`?lang=fr` for French).
