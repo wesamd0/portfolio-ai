@@ -67,15 +67,15 @@ const projects = [
       title: "Ecosysteme Cross-Play Distribue et Mobile",
       category: "Architecture distribuee / Mobile / Temps reel",
       summary:
-        "Transformation d'une architecture monolithique web en un systeme distribue multi-clients avec synchronisation temps reel entre client desktop et application mobile.",
+        "Transformation d'une architecture monolithique web en un système distribué multi-clients avec synchronisation temps réel entre client desktop et application mobile.",
       overview:
-        "Le projet a converti une plateforme web existante vers une experience multiplateforme commercialisable en orchestrant la synchronisation entre un client desktop lourd et un client mobile leger, tout en traitant la dette technique legacy.",
+        "Le projet a converti une plateforme web existante vers une expérience multiplateforme commercialisable en orchestrant la synchronisation entre un client desktop lourd et un client mobile léger, tout en traitant la dette technique legacy.",
       challenge:
-        "Le principal defi etait de transposer une UX desktop vers mobile sans regression, tout en respectant un cahier des charges SRS strict et des contraintes de maintenance logicielle.",
+        "Le principal défi était de transposer une UX desktop vers mobile sans régression, tout en respectant un cahier des charges SRS strict et des contraintes de maintenance logicielle.",
       approach:
-        "J'ai contribue a l'architecture distribuee sur AWS avec Socket.io, a la transposition UX mobile en Dart/Flutter avec capteurs natifs, au pilotage des exigences SRS, et a l'integration de nouvelles fonctionnalites dans le code legacy avec controle de non-regression.",
+        "J'ai contribué à l'architecture distribuée sur AWS avec Socket.io, à la transposition UX mobile en Dart/Flutter avec capteurs natifs, au pilotage des exigences SRS, et à l'intégration de nouvelles fonctionnalités dans le code legacy avec contrôle de non-régression.",
       outcome:
-        "Livraison finale prevue en mai 2026; la structure actuelle supporte deja une synchronisation cross-play fiable et un cadre d'evolution maintenable.",
+        "Livraison finale prévue en mai 2026; la structure actuelle supporte déjà une synchronisation cross-play fiable et un cadre d'évolution maintenable.",
       stack: [
         "Dart",
         "Flutter",
@@ -112,15 +112,15 @@ const projects = [
       title: "RPG Tactique Multijoueur",
       category: "Full Stack / Multijoueur / CI/CD",
       summary:
-        "Conception d'une application full stack Angular/Node.js avec synchronisation temps reel WebSockets et pipeline de deploiement continu.",
+        "Conception d'une application full stack Angular/Node.js avec synchronisation temps réel WebSockets et pipeline de déploiement continu.",
       overview:
-        "Le projet visait a livrer un jeu tactique robuste en production, avec une architecture distribuee complete, du front Angular jusqu'a la persistence MongoDB, dans un cadre Agile Scrum.",
+        "Le projet visait à livrer un jeu tactique robuste en production, avec une architecture distribuée complète, du front Angular jusqu'à la persistance MongoDB, dans un cadre Agile Scrum.",
       challenge:
-        "Le defi etait d'orchestrer en meme temps la concurrence multijoueur en temps reel, la qualite logicielle via tests et revues de code, et un deploiement CI/CD fiable vers AWS.",
+        "Le défi était d'orchestrer en même temps la concurrence multijoueur en temps réel, la qualité logicielle via tests et revues de code, et un déploiement CI/CD fiable vers AWS.",
       approach:
-        "J'ai participe transversalement a l'implementation des fonctionnalites front/back, a la redaction de tests unitaires (Jest/Mocha/Chai), aux revues de code, et a la configuration CI/CD avec contributions aux decisions d'architecture (UML, API REST).",
+        "J'ai participé transversalement à l'implémentation des fonctionnalités front/back, à la rédaction de tests unitaires (Jest/Mocha/Chai), aux revues de code, et à la configuration CI/CD avec contributions aux décisions d'architecture (UML, API REST).",
       outcome:
-        "Application deployee sur AWS via pipeline CI/CD automatise, avec gestion stable de la concurrence multijoueur et preservation de l'integrite des historiques de parties.",
+        "Application déployée sur AWS via pipeline CI/CD automatisé, avec gestion stable de la concurrence multijoueur et préservation de l'intégrité des historiques de parties.",
       stack: [
         "Angular 17",
         "TypeScript",
@@ -156,15 +156,15 @@ const projects = [
       title: "Robot Autonome de Navigation",
       category: "Embarque / Robotique / Navigation",
       summary:
-        "Conception d'un systeme de navigation autonome capable de cartographier et traverser un parcours d'obstacles en temps reel.",
+        "Conception d'un système de navigation autonome capable de cartographier et traverser un parcours d'obstacles en temps réel.",
       overview:
-        "Le projet reposait sur la coordination de deux robots: un robot explorateur cartographiait le parcours puis transmettait les donnees via infrarouge a un robot recepteur charge de s'orienter et sortir de sa zone.",
+        "Le projet reposait sur la coordination de deux robots: un robot explorateur cartographiait le parcours puis transmettait les données via infrarouge à un robot récepteur chargé de s'orienter et sortir de sa zone.",
       challenge:
-        "Le defi etait de garder un comportement deterministe avec communication IR, contraintes capteurs et interruptions, tout en assurant une integration fiable de bout en bout le jour de la demonstration.",
+        "Le défi était de garder un comportement déterministe avec communication IR, contraintes capteurs et interruptions, tout en assurant une intégration fiable de bout en bout le jour de la démonstration.",
       approach:
-        "J'ai pris la responsabilite complete du robot recepteur: machine a etats en C (Attente, Reception, Centrage, Sortie), algorithmes de correction de trajectoire, integration capteurs et support technique sur le robot suiveur de ligne pour garantir la chaine complete.",
+        "J'ai pris la responsabilité complète du robot récepteur: machine à états en C (Attente, Réception, Centrage, Sortie), algorithmes de correction de trajectoire, intégration capteurs et support technique sur le robot suiveur de ligne pour garantir la chaîne complète.",
       outcome:
-        "Le robot a execute le scenario de sortie de maniere autonome, sans intervention humaine, sans deviation de ligne et dans les temps impartis, validant la robustesse de la logique embarquee.",
+        "Le robot a exécuté le scénario de sortie de manière autonome, sans intervention humaine, sans déviation de ligne et dans les temps impartis, validant la robustesse de la logique embarquée.",
       stack: [
         "C / C++",
         "Linux Env.",
@@ -242,13 +242,13 @@ const projects = [
       summary:
         "Portfolio personnel bilingue moderne avec assistant IA, animations fluides et exploration dynamique des projets.",
       overview:
-        "Conception d'un site portfolio personnel moderne et bilingue integrant un assistant IA pour explorer les projets. L'application combine un changement de langue en temps reel, des animations fluides via Framer Motion, et une interface de chat interactive alimentee par des modeles de langage pour une exploration dynamique des projets.",
+        "Conception d'un site portfolio personnel moderne et bilingue intégrant un assistant IA pour explorer les projets. L'application combine un changement de langue en temps réel, des animations fluides via Framer Motion, et une interface de chat interactive alimentée par des modèles de langage pour une exploration dynamique des projets.",
       challenge:
-        "Construire un portfolio haute performance et accessible qui mette en avant les travaux techniques tout en maintenant une experience visuelle sophistiquee.",
+        "Construire un portfolio haute performance et accessible qui mette en avant les travaux techniques tout en maintenant une expérience visuelle sophistiquée.",
       approach:
-        "Developpement de composants React reactifs, gestion d'etat bilingue avec persistance URL, integration GROQ avec prompts RAG contextuels, et deploiement Vercel optimise via Next.js.",
+        "Développement de composants React réactifs, gestion d'état bilingue avec persistance URL, intégration GROQ avec prompts RAG contextuels, et déploiement Vercel optimisé via Next.js.",
       outcome:
-        "Portfolio moderne et performant deployee avec succes, combinant support bilingue, capacites IA interactives et animations sophistiquees.",
+        "Portfolio moderne et performant déployé avec succès, combinant support bilingue, capacités IA interactives et animations sophistiquées.",
       stack: [
         "Next.js",
         "TypeScript",
@@ -261,31 +261,31 @@ const projects = [
       ],
       details: {
         description:
-          "Conception d'un site portfolio personnel moderne et bilingue integrant un assistant IA pour explorer les projets. L'application combine un changement de langue en temps reel, des animations fluides via Framer Motion, et une interface de chat interactive alimentee par des modeles de langage pour une exploration dynamique des projets.",
+          "Conception d'un site portfolio personnel moderne et bilingue intégrant un assistant IA pour explorer les projets. L'application combine un changement de langue en temps réel, des animations fluides via Framer Motion, et une interface de chat interactive alimentée par des modèles de langage pour une exploration dynamique des projets.",
         challengeTitle: "Le Defi Technique",
         challengeDescription:
-          "Construire un portfolio haute performance et accessible qui mette en avant les travaux techniques tout en maintenant une experience visuelle sophistiquee. Le defi consistait a gerer l'etat entre les contextes linguistiques, optimiser les animations sans compromettre la reactivite, integrer les capacites IA de maniere responsable, et assurer que le site fonctionne parfaitement sur tous les appareils.",
+          "Construire un portfolio haute performance et accessible qui mette en avant les travaux techniques tout en maintenant une expérience visuelle sophistiquée. Le défi consistait à gérer l'état entre les contextes linguistiques, optimiser les animations sans compromettre la réactivité, intégrer les capacités IA de manière responsable, et assurer que le site fonctionne parfaitement sur tous les appareils.",
         contributionTitle: "Contribution Complete",
         contributionDescription:
-          "Developpement full-stack complet par une seule personne incluant :",
+          "Développement full-stack complet par une seule personne incluant :",
         roles: [
-          "Architecture Frontend : Composants React reactifs avec Framer Motion pour des transitions linguistiques fluides et animations hero",
-          "Gestion d'Etat : Commutation contextuelle bilingue avec persistance des parametres URL",
-          "Integration IA : Configuration de l'API GROQ avec prompts enrichis RAG pour discussions contextuelles sur les projets",
-          "Performance & Deploiement : Deploiement sur Vercel avec optimisations Next.js (optimisation d'images, decoupage automatique du code, cache edge)",
+          "Architecture Frontend : Composants React réactifs avec Framer Motion pour des transitions linguistiques fluides et animations hero",
+          "Gestion d'Etat : Commutation contextuelle bilingue avec persistance des paramètres URL",
+          "Intégration IA : Configuration de l'API GROQ avec prompts enrichis RAG pour discussions contextuelles sur les projets",
+          "Performance & Deploiement : Déploiement sur Vercel avec optimisations Next.js (optimisation d'images, découpage automatique du code, cache edge)",
         ],
         featuresTitle: "Fonctionnalites & Resultats",
         features: [
           "Site bilingue avec changement de langue sans interruption (EN/FR)",
-          "Assistant IA alimente par RAG pour des reponses contextuelles",
+          "Assistant IA alimenté par RAG pour des réponses contextuelles",
           "Animations lisses et transitions fluides dans toutes les interactions",
-          "Design mobile-first entierement reactif",
+          "Design mobile-first entièrement réactif",
           "Score de performance Lighthouse : 95+ sur mobile, 98+ sur desktop",
-          "Interface de chat en temps reel avec reponses en streaming",
+          "Interface de chat en temps réel avec réponses en streaming",
         ],
         resultTitle: "Resultat",
         resultDescription:
-          "Portfolio moderne et performant deployee avec succes, combinant le support bilingue, les capacites IA interactives et les animations sophistiquees. Le site demontre l'expertise en developpement full-stack tout en restant accessible et performant sur toutes les plateformes.",
+          "Portfolio moderne et performant déployé avec succès, combinant le support bilingue, les capacités IA interactives et les animations sophistiquées. Le site démontre l'expertise en développement full-stack tout en restant accessible et performant sur toutes les plateformes.",
         galleryTitle: "Images Illustratives du Projet",
         galleryCaption: "Portfolio en direct avec assistant IA et support bilingue",
         deploymentTitle: "Deploiement",
@@ -356,43 +356,43 @@ const projects = [
       title: "Portfolio Classique Angular",
       category: "Frontend / Angular / Multi-routes",
       summary:
-        "Portfolio personnel Angular structure avec pages dediees pour projets, competences et experience.",
+        "Portfolio personnel Angular structuré avec pages dédiées pour projets, compétences et expérience.",
       overview:
-        "Developpement d'un portfolio personnel structure et multi-routes avec Angular. Cette application complete offre une interface epuree et intuitive pour permettre aux recruteurs d'explorer facilement des pages dediees a chaque projet complexe en genie logiciel, ainsi que les competences techniques et l'experience professionnelle.",
+        "Développement d'un portfolio personnel structuré et multi-routes avec Angular. Cette application complète offre une interface épurée et intuitive pour permettre aux recruteurs d'explorer facilement des pages dédiées à chaque projet complexe en génie logiciel, ainsi que les compétences techniques et l'expérience professionnelle.",
       challenge:
-        "Concevoir une architecture frontend evolutive et maintenable en utilisant le modele oriente composants d'Angular.",
+        "Concevoir une architecture frontend évolutive et maintenable en utilisant le modèle orienté composants d'Angular.",
       approach:
-        "Mise en place d'un routage dynamique Angular Router, creation de composants SCSS reutilisables, structuration des donnees via TypeScript et services Angular, et approche mobile-first.",
+        "Mise en place d'un routage dynamique Angular Router, création de composants SCSS réutilisables, structuration des données via TypeScript et services Angular, et approche mobile-first.",
       outcome:
-        "Livraison reussie d'un portfolio robuste qui met en evidence de solides bases d'architecture multi-pages dans un framework d'envergure.",
+        "Livraison réussie d'un portfolio robuste qui met en évidence de solides bases d'architecture multi-pages dans un framework d'envergure.",
       stack: ["Angular", "TypeScript", "SCSS", "Angular Router"],
       details: {
         description:
-          "Developpement d'un portfolio personnel structure et multi-routes avec Angular. Cette application complete offre une interface epuree et intuitive pour permettre aux recruteurs d'explorer facilement des pages dediees a chaque projet complexe en genie logiciel, ainsi que les competences techniques et l'experience professionnelle.",
+          "Développement d'un portfolio personnel structuré et multi-routes avec Angular. Cette application complète offre une interface épurée et intuitive pour permettre aux recruteurs d'explorer facilement des pages dédiées à chaque projet complexe en génie logiciel, ainsi que les compétences techniques et l'expérience professionnelle.",
         challengeTitle: "Le Defi Technique",
         challengeDescription:
-          "Concevoir une architecture frontend evolutive et maintenable en utilisant le modele oriente composants d'Angular. Le defi consistait a implementer un routage dynamique efficace pour gerer les pages dediees aux projets, a assurer une mise en page entierement reactive et a creer une UI/UX facilement lisible et optimisee pour l'evaluation.",
+          "Concevoir une architecture frontend évolutive et maintenable en utilisant le modèle orienté composants d'Angular. Le défi consistait à implémenter un routage dynamique efficace pour gérer les pages dédiées aux projets, à assurer une mise en page entièrement réactive et à créer une UI/UX facilement lisible et optimisée pour l'évaluation.",
         contributionTitle: "Contribution Complete",
         contributionDescription:
-          "Developpement frontend de bout en bout incluant :",
+          "Développement frontend de bout en bout incluant :",
         roles: [
-          "Architecture & Routage : Conception d'un systeme de routage dynamique utilisant Angular Router pour une navigation fluide entre l'accueil, les sections de contact et les vues individuelles des projets",
-          "Design de Composants : Creation de composants UI reutilisables et encapsules avec SCSS pour une esthetique coherente et professionnelle",
-          "Gestion des Donnees : Structuration des donnees de projets via des interfaces TypeScript et des services Angular pour peupler dynamiquement chaque page de projet",
-          "UI Reactive : Approche mobile-first garantissant une lisibilite parfaite sur ordinateur, tablette et mobile",
+          "Architecture & Routage : Conception d'un système de routage dynamique utilisant Angular Router pour une navigation fluide entre l'accueil, les sections de contact et les vues individuelles des projets",
+          "Design de Composants : Création de composants UI réutilisables et encapsulés avec SCSS pour une esthétique cohérente et professionnelle",
+          "Gestion des Donnees : Structuration des données de projets via des interfaces TypeScript et des services Angular pour peupler dynamiquement chaque page de projet",
+          "UI Reactive : Approche mobile-first garantissant une lisibilité parfaite sur ordinateur, tablette et mobile",
         ],
         featuresTitle: "Fonctionnalites & Resultats",
         features: [
-          "Architecture multi-routes dynamique avec des pages dediees pour chaque realisation",
-          "Rendu cote client rapide et optimise grace a la puissance d'Angular",
-          "UI/UX epuree, optimisee pour l'exploration detaillee par les recruteurs",
-          "Design mobile-first entierement reactif",
-          "Typage fort et integrite structurelle stricte assures par TypeScript",
-          "Integration directe de ressources telechargeables (CV) et de liens professionnels",
+          "Architecture multi-routes dynamique avec des pages dédiées pour chaque réalisation",
+          "Rendu côté client rapide et optimisé grâce à la puissance d'Angular",
+          "UI/UX épurée, optimisée pour l'exploration détaillée par les recruteurs",
+          "Design mobile-first entièrement réactif",
+          "Typage fort et intégrité structurelle stricte assurés par TypeScript",
+          "Intégration directe de ressources téléchargeables (CV) et de liens professionnels",
         ],
         resultTitle: "Resultat",
         resultDescription:
-          "Livraison reussie d'un portfolio robuste qui met en evidence de solides bases d'architecture multi-pages dans un framework d'envergure. L'application sert de point d'ancrage professionnel fiable, detaillant en profondeur l'experience en ingenierie.",
+          "Livraison réussie d'un portfolio robuste qui met en évidence de solides bases d'architecture multi-pages dans un framework d'envergure. L'application sert de point d'ancrage professionnel fiable, détaillant en profondeur l'expérience en ingénierie.",
         galleryTitle: "Images Illustratives du Projet",
         galleryCaption: "Portfolio classique Angular (v1)",
         deploymentTitle: "Deploiement",

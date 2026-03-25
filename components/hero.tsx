@@ -99,62 +99,62 @@ const content = {
     ],
   },
   fr: {
-    topLabel: "Genie logiciel / Systemes / Interfaces",
-    statusBadge: "Etudiant en genie logiciel",
+    topLabel: "Génie logiciel / Systèmes / Interfaces",
+    statusBadge: "Étudiant en génie logiciel",
     schoolBadge: "Polytechnique Montreal",
     intro:
-      "Je construis des logiciels solides sous pression, des systemes multijoueurs distribues et robots embarques jusqu'aux interfaces claires pour des produits complexes.",
-    askLabel: "Demander a Wesam",
+      "Je construis des logiciels solides sous pression, des systèmes multijoueurs distribués et robots embarqués jusqu'aux interfaces claires pour des produits complexes.",
+    askLabel: "Demander à Wesam",
     askTitle: "La couche IA est la page d'accueil.",
     askText:
-      "Pose une question sur mon parcours, mes projets, mon stack technique ou les compromis derriere les systemes ci-dessous.",
+      "Pose une question sur mon parcours, mes projets, mon stack technique ou les compromis derrière les systèmes ci-dessous.",
     emptyState:
-      "Commence par mes etudes, ma facon de construire des systemes ou ce que j'ai appris des projets ci-dessous.",
+      "Commence par mes études, ma façon de construire des systèmes ou ce que j'ai appris des projets ci-dessous.",
     placeholders: [
-      "Qu'etudies-tu a Polytechnique Montreal ?",
+      "Qu'étudies-tu à Polytechnique Montreal ?",
       "Quel type de projets aimes-tu construire ?",
       "Avec quelles technologies travailles-tu le plus ?",
     ],
     introNotes: [
       {
-        label: "Base a",
+        label: "Basé à",
         value: "Laval, Quebec",
       },
       {
-        label: "Etudes",
-        value: "Genie logiciel a Polytechnique Montreal",
+        label: "Études",
+        value: "Génie logiciel à Polytechnique Montreal",
       },
       {
         label: "Style de travail",
-        value: "Execution calme sous pression et coordination claire en equipe",
+        value: "Exécution calme sous pression et coordination claire en équipe",
       },
     ],
     profileNotes: [
       {
-        title: "Ma facon de construire",
+        title: "Ma façon de construire",
         text:
-          "J'aime les projets avec plusieurs pieces en mouvement : etat temps reel, architecture claire et interfaces qui restent simples meme quand le systeme derriere est complexe.",
+          "J'aime les projets avec plusieurs pièces en mouvement : état temps réel, architecture claire et interfaces qui restent simples même quand le système derrière est complexe.",
       },
       {
         title: "Ce qui me structure",
         text:
-          "Le travail en cuisine sous pression m'a appris a prioriser vite, communiquer clairement et garder une qualite constante quand le rythme s'accelere.",
+          "Le travail en cuisine sous pression m'a appris à prioriser vite, communiquer clairement et garder une qualité constante quand le rythme s'accélère.",
       },
       {
         title: "Langues",
         text:
-          "Je parle couramment francais, je suis a l'aise en anglais et l'arabe est ma langue maternelle. Ca m'aide a naviguer proprement entre equipes, utilisateurs et contexte technique.",
+          "Je parle couramment français, je suis à l'aise en anglais et l'arabe est ma langue maternelle. Ça m'aide à naviguer proprement entre équipes, utilisateurs et contexte technique.",
       },
     ],
-    projectsLabel: "Projets selectionnes",
+    projectsLabel: "Projets sélectionnés",
     projectsText:
-      "Des systemes temps reel, de la logique embarquee et des produits qui devaient rester fiables au-dela du prototype.",
+      "Des systèmes temps réel, de la logique embarquée et des produits qui devaient rester fiables au-delà du prototype.",
     openLabel: "Ouvrir",
     highlights: [
-      "Systemes distribues",
-      "Applications temps reel",
-      "Logiciel embarque",
-      "Reflexe CI/CD",
+      "Systèmes distribués",
+      "Applications temps réel",
+      "Logiciel embarqué",
+      "Réflexe CI/CD",
     ],
   },
 } as const;
