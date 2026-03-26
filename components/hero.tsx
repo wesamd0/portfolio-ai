@@ -330,11 +330,11 @@ export function Hero() {
         {enableVisualFx ? (
           <FlickeringGrid
             className="absolute inset-0 size-full opacity-18 [mask-image:radial-gradient(circle_at_top,black_18%,transparent_62%)]"
-            squareSize={4}
-            gridGap={10}
+            squareSize={8}
+            gridGap={14}
             color="#73e9ff"
-            maxOpacity={0.1}
-            flickerChance={0.04}
+            maxOpacity={0.07}
+            flickerChance={0.015}
           />
         ) : null}
       </div>

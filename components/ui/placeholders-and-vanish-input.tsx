@@ -33,8 +33,12 @@ export function PlaceholdersAndVanishInput({
 
   useEffect(() => {
     const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) {
+        return;
+      }
+
       setCurrentPlaceholder((prev) => (prev + 1) % placeholders.length);
-    }, 1500);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, [placeholders.length]);

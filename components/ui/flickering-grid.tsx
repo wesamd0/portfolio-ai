@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from "react";
 
 interface FlickeringGridProps {
@@ -29,10 +28,12 @@ const FlickeringGrid: React.FC<FlickeringGridProps> = ({
   className,
   maxOpacity = 0.3,
 }) => {
+  const TARGET_FPS = 10;
+  const FRAME_INTERVAL_MS = 1000 / TARGET_FPS;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isInView, setIsInView] = useState(false);
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const isInViewRef = useRef(false);
+  const isPageVisibleRef = useRef(true);
 
   const memoizedColor = useMemo(() => {
     const toRGBA = (currentColor: string) => {
@@ -92,19 +93,18 @@ const FlickeringGrid: React.FC<FlickeringGridProps> = ({
       squares: Float32Array,
       dpr: number,
     ) => {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, currentWidth, currentHeight);
-      ctx.fillStyle = "transparent";
-      ctx.fillRect(0, 0, currentWidth, currentHeight);
 
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
           const opacity = squares[i * rows + j];
           ctx.fillStyle = `${memoizedColor}${opacity})`;
           ctx.fillRect(
-            i * (squareSize + gridGap) * dpr,
-            j * (squareSize + gridGap) * dpr,
-            squareSize * dpr,
-            squareSize * dpr,
+            i * (squareSize + gridGap),
+            j * (squareSize + gridGap),
+            squareSize,
+            squareSize,
           );
         }
       }
@@ -122,19 +122,30 @@ const FlickeringGrid: React.FC<FlickeringGridProps> = ({
 
     let animationFrameId = 0;
     let gridParams: ReturnType<typeof setupCanvas>;
+    let cssWidth = 0;
+    let cssHeight = 0;
+    let lastPaintTime = 0;
 
     const updateCanvasSize = () => {
-      const newWidth = width || container.clientWidth;
-      const newHeight = height || container.clientHeight;
-      setCanvasSize({ width: newWidth, height: newHeight });
-      gridParams = setupCanvas(canvas, newWidth, newHeight);
+      cssWidth = width || container.clientWidth;
+      cssHeight = height || container.clientHeight;
+      gridParams = setupCanvas(canvas, cssWidth, cssHeight);
     };
 
     updateCanvasSize();
 
     let lastTime = 0;
     const animate = (time: number) => {
-      if (!isInView) return;
+      if (!isInViewRef.current || !isPageVisibleRef.current) {
+        animationFrameId = requestAnimationFrame(animate);
+        return;
+      }
+
+      if (time - lastPaintTime < FRAME_INTERVAL_MS) {
+        animationFrameId = requestAnimationFrame(animate);
+        return;
+      }
+      lastPaintTime = time;
 
       const deltaTime = (time - lastTime) / 1000;
       lastTime = time;
@@ -142,8 +153,8 @@ const FlickeringGrid: React.FC<FlickeringGridProps> = ({
       updateSquares(gridParams.squares, deltaTime);
       drawGrid(
         ctx,
-        canvas.width,
-        canvas.height,
+        cssWidth,
+        cssHeight,
         gridParams.cols,
         gridParams.rows,
         gridParams.squares,
@@ -160,34 +171,33 @@ const FlickeringGrid: React.FC<FlickeringGridProps> = ({
 
     const intersectionObserver = new IntersectionObserver(
       ([entry]) => {
-        setIsInView(entry.isIntersecting);
+        isInViewRef.current = entry.isIntersecting;
       },
       { threshold: 0 },
     );
 
     intersectionObserver.observe(canvas);
 
-    if (isInView) {
-      animationFrameId = requestAnimationFrame(animate);
-    }
+    const handleVisibilityChange = () => {
+      isPageVisibleRef.current = !document.hidden;
+    };
+
+    handleVisibilityChange();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    animationFrameId = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [setupCanvas, updateSquares, drawGrid, width, height, isInView]);
+  }, [setupCanvas, updateSquares, drawGrid, width, height]);
 
   return (
     <div ref={containerRef} className={`h-full w-full ${className ?? ""}`}>
-      <canvas
-        ref={canvasRef}
-        className="pointer-events-none"
-        style={{
-          width: canvasSize.width,
-          height: canvasSize.height,
-        }}
-      />
+      <canvas ref={canvasRef} className="pointer-events-none h-full w-full" />
     </div>
   );
 };
