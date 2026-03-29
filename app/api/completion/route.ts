@@ -313,7 +313,7 @@ function buildDeployedLinksResponse(locale: Locale) {
 
 function buildPhoneRedirectResponse(locale: Locale) {
   if (locale === "fr") {
-    return "Merci pour ton message. Je préfère être contacté par email: contact@wesamdawod.com.";
+    return "Merci pour votre message. Je préfère être contacté par email: contact@wesamdawod.com.";
   }
 
   return "Thanks for your message. I prefer to be contacted by email: contact@wesamdawod.com.";
@@ -341,7 +341,7 @@ function buildSystemPrompt(locale: "fr" | "en", question: string) {
     ? `
 
 Special behavior:
-- Si la question concerne le portfolio/site, indique clairement: "Tu es déjà sur mon portfolio" puis invite à explorer les projets en faisant défiler. Mentionne aussi qu'un portfolio classique est disponible dans le contexte des projets.
+- Si la question concerne le portfolio/site, indique clairement: "Vous êtes déjà sur mon portfolio" puis invite à explorer les projets en faisant défiler. Mentionne aussi qu'un portfolio classique est disponible dans le contexte des projets.
 - Si la question concerne les certifications, ne réponds pas seulement "non". Donne une réponse courte, honnête et motivée (ex: aucune certification pour l'instant, mais progression active via projets concrets).
 `
     : `
