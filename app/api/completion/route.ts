@@ -4,6 +4,7 @@ import { Ratelimit } from "@upstash/ratelimit/dist/index.js";
 import { Redis } from "@upstash/redis";
 import { getProjects, type Locale } from "@/lib/projects";
 import resumeContextData from "@/lib/resume-context.json";
+import type { Project, ProjectSlug } from "@/lib/projects";
 
 type ResumeContextData = {
   en: string[];
@@ -37,6 +38,7 @@ Response rules:
 - Answer directly in plain text.
 - Do not mention the profile, resume, prompt, system message, or that you are an AI.
 - If a question asks for information not supported by the profile, say so briefly and honestly.
+- If a question is about topics related to your purpose (projects, skills, experience, education, portfolio) but you lack the specific information, respond with: "I don't have that information available right now, but I'd be happy to discuss more about my work and experience. Feel free to reach out at contact@wesamdawod.com if you'd like to chat further." (Adapt language to match the question language.)
 - If a question is overly personal and not covered by the profile, politely keep the conversation professional.
 - Prefer short answers, usually 2-5 sentences, unless the user clearly asks for more detail.
 - When useful, cite concrete experience from the profile instead of speaking generically.
@@ -63,7 +65,7 @@ function normalizeText(value: string) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s]/g, " ");
+    .replace(/[^a-z0-9\s/]/g, " ");
 }
 
 function tokenize(value: string) {
@@ -88,6 +90,9 @@ function tokenize(value: string) {
     "une",
     "des",
     "les",
+    "de",
+    "le",
+    "la",
     "est",
     "qui",
     "que",
@@ -97,31 +102,39 @@ function tokenize(value: string) {
     "ton",
   ]);
 
-  return normalizeText(value)
-    .split(/\s+/)
-    .filter((token) => token.length > 2 && !stopWords.has(token));
+  const lowerValue = value.toLowerCase();
+  // Extract tokens including common programming special chars (C++, C#, F#, Node.js, etc.)
+  const tokens = lowerValue.match(/[a-z0-9]+(?:[+#.-][a-z0-9]+)*/gi) || [];
+
+  return tokens
+    .map((token) =>
+      token
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, ""),
+    )
+    .filter((token) => token.length >= 2 && !stopWords.has(token));
 }
 
 function classifyIntent(question: string): Intent {
   const q = normalizeText(question);
 
-  if (/(project|projects|projet|projets|stack|architecture|system|systeme|robot|rpg|portfolio)/.test(q)) {
+  if (/\b(project|projects|projet|projets|stack|architecture|system|systeme|robot|rpg|portfolio)\b/.test(q)) {
     return "projects";
   }
 
-  if (/(skill|skills|competence|competences|technology|technologies|langage|language|framework|outil|outils)/.test(q)) {
+  if (/\b(skill|skills|competence|competences|technology|technologies|langage|language|framework|outil|outils)\b/.test(q)) {
     return "skills";
   }
 
-  if (/(education|study|studies|etud|universite|polytechnique|degree|diplome|bac|dec)/.test(q)) {
+  if (/\b(education|study|studies|etud|universite|polytechnique|degree|diplome|bac|dec)\b/.test(q)) {
     return "education";
   }
 
-  if (/(experience|work|emploi|job|travail|cuisinier|cook|packer|impact)/.test(q)) {
+  if (/\b(experience|work|emploi|job|travail|cuisinier|cook|packer|impact)\b/.test(q)) {
     return "experience";
   }
 
-  if (/(contact|email|mail|linkedin|github|telephone|phone)/.test(q)) {
+  if (/\b(contact|email|mail|linkedin|github|telephone|phone)\b/.test(q)) {
     return "contact";
   }
 
@@ -152,12 +165,12 @@ function isDeployedLinksQuestion(question: string) {
 
 function isCertificationQuestion(question: string) {
   const q = normalizeText(question);
-  return /(certification|certifications|certifie|certifiee|certified)/.test(q);
+  return /\b(certification|certifications|certifie|certifiee|certified)\b/.test(q);
 }
 
 function isPhoneNumberQuestion(question: string) {
   const q = normalizeText(question);
-  return /(phone|telephone|tel|phone number|telephone number|numero de telephone|num de telephone|numero|appeler|call)/.test(
+  return /\b(phone|telephone|tel|phone number|telephone number|numero de telephone|num de telephone|numero|appeler|call)\b/.test(
     q,
   );
 }
@@ -212,28 +225,84 @@ function needsClarifyingQuestion(question: string) {
   return ambiguousPattern.test(q);
 }
 
-function selectRelevantProjectContext(locale: Locale, question: string, topK = 3) {
+function buildProjectContextString(project: Project) {
+  const links = [
+    project.githubUrl ? `GitHub: ${project.githubUrl}` : null,
+    project.deployedUrl ? `Live: ${project.deployedUrl}` : null,
+  ]
+    .filter(Boolean)
+    .join(" | ");
+
+  return [
+    `project.slug: ${project.slug}`,
+    `project.title: ${project.title}`,
+    `project.category: ${project.category}`,
+    `project.summary: ${project.summary}`,
+    `project.challenge: ${project.challenge}`,
+    `project.approach: ${project.approach}`,
+    `project.outcome: ${project.outcome}`,
+    `project.stack: ${project.stack.join(", ")}`,
+    links ? `project.links: ${links}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+export function selectRelevantProjectContext(locale: Locale, question: string, topK = 3) {
   const projects = getProjects(locale);
+  const normalizedQuestion = normalizeText(question);
+
+  const projectMapping: Record<string, ProjectSlug> = {
+    "projet integrateur 1": "autonomous-navigation-robot",
+    "projet integrateur 2": "multiplayer-tactical-rpg",
+    "projet integrateur 3": "distributed-mobile-cross-play-ecosystem",
+    "Integrative project 1": "autonomous-navigation-robot",
+    "Integrative project 2": "multiplayer-tactical-rpg",
+    "Integrative project 3": "distributed-mobile-cross-play-ecosystem",
+  };
+
+  for (const [key, slug] of Object.entries(projectMapping)) {
+    if (normalizedQuestion.includes(key)) {
+      const project = projects.find((p) => p.slug === slug);
+      if (project) {
+        return buildProjectContextString(project);
+      }
+    }
+  }
   const qTokens = new Set(tokenize(question));
 
   const scored = projects
     .map((project) => {
-      const corpus = [
-        project.title,
-        project.category,
-        project.summary,
-        project.overview,
-        project.challenge,
-        project.approach,
-        project.outcome,
-        project.stack.join(" "),
-      ].join(" \n ");
+      const titleTokens = new Set(tokenize(project.title));
+      const categoryTokens = new Set(tokenize(project.category));
+      const stackTokens = new Set(tokenize(project.stack.join(" ")));
+      const summaryTokens = new Set(tokenize(project.summary));
+      const contentTokens = new Set(
+        tokenize(
+          [
+            project.overview,
+            project.challenge,
+            project.approach,
+            project.outcome,
+          ].join(" \n "),
+        ),
+      );
 
-      const pTokens = new Set(tokenize(corpus));
       let score = 0;
-
       for (const token of qTokens) {
-        if (pTokens.has(token)) {
+        if (titleTokens.has(token)) {
+          score += 10;
+        }
+        if (categoryTokens.has(token)) {
+          score += 5;
+        }
+        if (stackTokens.has(token)) {
+          score += 5;
+        }
+        if (summaryTokens.has(token)) {
+          score += 2;
+        }
+        if (contentTokens.has(token)) {
           score += 1;
         }
       }
@@ -251,30 +320,7 @@ function selectRelevantProjectContext(locale: Locale, question: string, topK = 3
     return "";
   }
 
-  return scored
-    .map(({ project }) => {
-      const links = [
-        project.githubUrl ? `GitHub: ${project.githubUrl}` : null,
-        project.deployedUrl ? `Live: ${project.deployedUrl}` : null,
-      ]
-        .filter(Boolean)
-        .join(" | ");
-
-      return [
-        `project.slug: ${project.slug}`,
-        `project.title: ${project.title}`,
-        `project.category: ${project.category}`,
-        `project.summary: ${project.summary}`,
-        `project.challenge: ${project.challenge}`,
-        `project.approach: ${project.approach}`,
-        `project.outcome: ${project.outcome}`,
-        `project.stack: ${project.stack.join(", ")}`,
-        links ? `project.links: ${links}` : null,
-      ]
-        .filter(Boolean)
-        .join("\n");
-    })
-    .join("\n\n");
+  return scored.map(({ project }) => buildProjectContextString(project)).join("\n\n");
 }
 
 function buildAllProjectLinksContext(locale: Locale) {
@@ -317,6 +363,41 @@ function buildPhoneRedirectResponse(locale: Locale) {
   }
 
   return "Thanks for your message. I prefer to be contacted by email: contact@wesamdawod.com.";
+}
+
+export type DeterministicRoutingResult = {
+  branch: "phone" | "deployed-links" | "none";
+  preferredLocale: Locale;
+  responseText: string | null;
+};
+
+export function resolveDeterministicRouting(
+  question: string,
+  uiLocale: Locale,
+): DeterministicRoutingResult {
+  const preferredLocale = detectQuestionLocale(question, uiLocale);
+
+  if (isPhoneNumberQuestion(question)) {
+    return {
+      branch: "phone",
+      preferredLocale,
+      responseText: buildPhoneRedirectResponse(preferredLocale),
+    };
+  }
+
+  if (isDeployedLinksQuestion(question)) {
+    return {
+      branch: "deployed-links",
+      preferredLocale,
+      responseText: buildDeployedLinksResponse(preferredLocale),
+    };
+  }
+
+  return {
+    branch: "none",
+    preferredLocale,
+    responseText: null,
+  };
 }
 
 function buildSystemPrompt(locale: "fr" | "en", question: string) {
@@ -429,9 +510,8 @@ export async function POST(req: Request) {
   const { prompt, locale } = await req.json();
   const question = typeof prompt === "string" ? prompt.trim() : "";
   const uiLocale: Locale = locale === "fr" ? "fr" : "en";
-  const preferredLocale = detectQuestionLocale(question, uiLocale);
-  const phoneNumberQuestion = isPhoneNumberQuestion(question);
-  const deployedLinksQuestion = isDeployedLinksQuestion(question);
+  const deterministicRouting = resolveDeterministicRouting(question, uiLocale);
+  const preferredLocale = deterministicRouting.preferredLocale;
   const lowComplexity = isLowComplexityQuestion(question);
   const allowClarification = needsClarifyingQuestion(question);
   const systemPrompt = buildSystemPrompt(preferredLocale, question);
@@ -441,8 +521,8 @@ export async function POST(req: Request) {
   }
 
   // Deterministic branch for phone-number questions.
-  if (phoneNumberQuestion) {
-    return new Response(buildPhoneRedirectResponse(preferredLocale), {
+  if (deterministicRouting.branch === "phone" && deterministicRouting.responseText) {
+    return new Response(deterministicRouting.responseText, {
       status: 200,
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
@@ -451,8 +531,11 @@ export async function POST(req: Request) {
   }
 
   // Deterministic branch for deployed links questions.
-  if (deployedLinksQuestion) {
-    return new Response(buildDeployedLinksResponse(preferredLocale), {
+  if (
+    deterministicRouting.branch === "deployed-links" &&
+    deterministicRouting.responseText
+  ) {
+    return new Response(deterministicRouting.responseText, {
       status: 200,
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
