@@ -400,7 +400,7 @@ export function resolveDeterministicRouting(
   };
 }
 
-function buildSystemPrompt(locale: "fr" | "en", question: string) {
+export function buildSystemPrompt(locale: "fr" | "en", question: string) {
   const profileContext = locale === "fr" ? resumeContextFr : resumeContextEn;
   const intent = classifyIntent(question);
   const relevantProjectContext = selectRelevantProjectContext(locale, question);
