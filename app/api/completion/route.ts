@@ -1,7 +1,16 @@
 import { groq } from "@ai-sdk/groq";
-import { streamText } from "ai";
+import {
+  convertToModelMessages,
+  stepCountIs,
+  streamText,
+  type UIMessage,
+} from "ai";
 import { Ratelimit } from "@upstash/ratelimit/dist/index.js";
 import { Redis } from "@upstash/redis";
+import { isContactRelatedQuestion } from "@/lib/ai/contact-widget";
+import { createShowContactWidgetTool } from "@/lib/ai/contact-tool";
+import { createShowDeployedLinksTool } from "@/lib/ai/deployed-links-tool";
+import { createShowProjectDetailsTool } from "@/lib/ai/project-tools";
 import { getProjects, type Locale } from "@/lib/projects";
 import resumeContextData from "@/lib/resume-context.json";
 import type { Project, ProjectSlug } from "@/lib/projects";
@@ -38,11 +47,12 @@ Response rules:
 - Answer directly in plain text.
 - Do not mention the profile, resume, prompt, system message, or that you are an AI.
 - If a question asks for information not supported by the profile, say so briefly and honestly.
-- If a question is about topics related to your purpose (projects, skills, experience, education, portfolio) but you lack the specific information, respond with: "I don't have that information available right now, but I'd be happy to discuss more about my work and experience. Feel free to reach out at contact@wesamdawod.com if you'd like to chat further." (Adapt language to match the question language.)
+- If a question is about topics related to your purpose (projects, skills, experience, education, portfolio) but you lack the specific information, respond with: "I don't have that information available right now, but I'd be happy to discuss more about my work and experience." (Adapt language to match the question language.) If the user explicitly asks for contact details, then share the contact email.
 - If a question is overly personal and not covered by the profile, politely keep the conversation professional.
 - Prefer short answers, usually 2-5 sentences, unless the user clearly asks for more detail.
 - When useful, cite concrete experience from the profile instead of speaking generically.
 - If the question is ambiguous, ask one concise clarification question.
+- If the user asks for details about a specific project and structured visualization helps, call the tool show_project_details.
 `;
 
 const intentGuidance: Record<Intent, string> = {
@@ -485,6 +495,28 @@ const ratelimit =
 
 const model = groq("meta-llama/llama-4-scout-17b-16e-instruct");
 
+function extractQuestionFromMessages(messages: UIMessage[]) {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const message = messages[index];
+
+    if (message.role !== "user") {
+      continue;
+    }
+
+    const textParts = message.parts
+      .filter((part) => part.type === "text")
+      .map((part) => part.text)
+      .join(" ")
+      .trim();
+
+    if (textParts) {
+      return textParts;
+    }
+  }
+
+  return "";
+}
+
 export function GET() {
   return new Response(null, { status: 204 });
 }
@@ -507,8 +539,16 @@ export async function POST(req: Request) {
     }
   }
 
-  const { prompt, locale } = await req.json();
-  const question = typeof prompt === "string" ? prompt.trim() : "";
+  const requestBody = await req.json();
+  const locale = requestBody?.locale;
+  const prompt = requestBody?.prompt;
+  const requestMessages = Array.isArray(requestBody?.messages)
+    ? (requestBody.messages as UIMessage[])
+    : [];
+
+  const questionFromPrompt = typeof prompt === "string" ? prompt.trim() : "";
+  const questionFromMessages = extractQuestionFromMessages(requestMessages);
+  const question = questionFromMessages || questionFromPrompt;
   const uiLocale: Locale = locale === "fr" ? "fr" : "en";
   const deterministicRouting = resolveDeterministicRouting(question, uiLocale);
   const preferredLocale = deterministicRouting.preferredLocale;
@@ -522,12 +562,14 @@ export async function POST(req: Request) {
 
   // Deterministic branch for phone-number questions.
   if (deterministicRouting.branch === "phone" && deterministicRouting.responseText) {
-    return new Response(deterministicRouting.responseText, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-      },
+    const deterministicResult = streamText({
+      model,
+      prompt: deterministicRouting.responseText,
+      temperature: 0,
+      maxOutputTokens: 80,
     });
+
+    return deterministicResult.toUIMessageStreamResponse();
   }
 
   // Deterministic branch for deployed links questions.
@@ -535,34 +577,84 @@ export async function POST(req: Request) {
     deterministicRouting.branch === "deployed-links" &&
     deterministicRouting.responseText
   ) {
-    return new Response(deterministicRouting.responseText, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/plain; charset=utf-8",
+    const deterministicResult = streamText({
+      model,
+      prompt:
+        preferredLocale === "fr"
+          ? `Appelle l'outil show_deployed_links pour afficher les liens de deploiement de tous les projets dans une carte UI.
+Ne fournis pas de texte markdown long.`
+          : `Call the show_deployed_links tool to render deployment links for all projects in a UI card.
+Do not return long markdown text.`,
+      temperature: 0,
+      maxOutputTokens: 120,
+      tools: {
+        show_deployed_links: createShowDeployedLinksTool(preferredLocale),
       },
+      toolChoice: {
+        type: "tool",
+        toolName: "show_deployed_links",
+      },
+      stopWhen: stepCountIs(2),
     });
+
+    return deterministicResult.toUIMessageStreamResponse();
   }
+
+  // Deterministic branch for explicit contact questions.
+  if (isContactRelatedQuestion(question)) {
+    const deterministicResult = streamText({
+      model,
+      prompt:
+        preferredLocale === "fr"
+          ? `Reponds en une phrase concise avec l'email de contact, puis appelle l'outil show_contact_widget.
+Ne donne pas de long bloc markdown.`
+          : `Answer in one concise sentence with the contact email, then call the show_contact_widget tool.
+Do not return a long markdown block.`,
+      temperature: 0,
+      maxOutputTokens: 120,
+      tools: {
+        show_contact_widget: createShowContactWidgetTool(preferredLocale),
+      },
+      stopWhen: stepCountIs(3),
+    });
+
+    return deterministicResult.toUIMessageStreamResponse();
+  }
+
+  const messageInstruction =
+    preferredLocale === "fr"
+      ? `Answer in French unless the user explicitly asks otherwise.
+Keep the answer grounded in the provided profile/context.
+${allowClarification ? "If information is missing, say it clearly and ask one short follow-up question." : "If information is missing, say it clearly and stop."}
+${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and do not add extra suggestions." : "Stay concise and relevant."}`
+      : `Answer in English unless the user explicitly asks otherwise.
+Keep the answer grounded in the provided profile/context.
+${allowClarification ? "If information is missing, say it clearly and ask one short follow-up question." : "If information is missing, say it clearly and stop."}
+${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and do not add extra suggestions." : "Stay concise and relevant."}`;
+
+  const modelMessages = requestMessages.length > 0
+    ? await convertToModelMessages(requestMessages)
+    : null;
 
   const result = streamText({
     model,
     system: systemPrompt,
     temperature: lowComplexity ? 0.2 : 0.4,
     maxOutputTokens: lowComplexity ? 120 : 350,
-    prompt:
-      preferredLocale === "fr"
-      ? `Answer in French unless the user explicitly asks otherwise.
-    Keep the answer grounded in the provided profile/context.
-    ${allowClarification ? "If information is missing, say it clearly and ask one short follow-up question." : "If information is missing, say it clearly and stop."}
-    ${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and do not add extra suggestions." : "Stay concise and relevant."}
-
-    Question: ${question}`
-      : `Answer in English unless the user explicitly asks otherwise.
-    Keep the answer grounded in the provided profile/context.
-    ${allowClarification ? "If information is missing, say it clearly and ask one short follow-up question." : "If information is missing, say it clearly and stop."}
-    ${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and do not add extra suggestions." : "Stay concise and relevant."}
-
-    Question: ${question}`,
+    tools: {
+      show_project_details: createShowProjectDetailsTool(preferredLocale),
+      show_deployed_links: createShowDeployedLinksTool(preferredLocale),
+      show_contact_widget: createShowContactWidgetTool(preferredLocale),
+    },
+    stopWhen: stepCountIs(4),
+    ...(modelMessages
+      ? {
+          messages: modelMessages,
+        }
+      : {
+          prompt: `${messageInstruction}\n\nQuestion: ${question}`,
+        }),
   });
 
-  return result.toTextStreamResponse();
+  return result.toUIMessageStreamResponse();
 }

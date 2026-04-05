@@ -1,11 +1,21 @@
 "use client";
 
-import { useCompletion } from "@ai-sdk/react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Github, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { ContactAvailabilityCard, type ContactAvailabilityCardProps } from "@/components/contact-availability-card";
+import { DeployedLinksCard, type DeployedLinksCardProps } from "@/components/deployed-links-card";
+import { ProjectCard, type ProjectCardProps } from "@/components/project-card";
+import { buildContactWidgetData, isContactRelatedQuestion } from "@/lib/ai/contact-widget";
+import {
+  buildDeployedLinksCardData,
+  isDeployedLinksQuestion,
+  resolveProjectCardByQuestion,
+} from "@/lib/ai/project-resolution";
 import { getProjects } from "@/lib/projects";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
@@ -246,29 +256,356 @@ const localizedVariants = {
   }),
 };
 
+type ToolPartLike = {
+  type?: unknown;
+  input?: unknown;
+  output?: unknown;
+  args?: unknown;
+  result?: unknown;
+  toolName?: unknown;
+};
+
+function isProjectCardPayload(value: unknown): value is ProjectCardProps {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  return (
+    typeof candidate.projectName === "string" &&
+    Array.isArray(candidate.techStack) &&
+    candidate.techStack.every((item) => typeof item === "string") &&
+    typeof candidate.role === "string" &&
+    typeof candidate.architectureDescription === "string"
+  );
+}
+
+function isDeployedLinksPayload(value: unknown): value is DeployedLinksCardProps {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  return (
+    typeof candidate.title === "string" &&
+    Array.isArray(candidate.links) &&
+    candidate.links.every((item) => {
+      if (!item || typeof item !== "object") {
+        return false;
+      }
+
+      const link = item as Record<string, unknown>;
+      return (
+        typeof link.projectName === "string" &&
+        typeof link.deployedUrl === "string" &&
+        (link.status === "live" || link.status === "coming-soon")
+      );
+    })
+  );
+}
+
+function isContactWidgetPayload(value: unknown): value is ContactAvailabilityCardProps {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.title === "string" &&
+    typeof candidate.subtitle === "string" &&
+    typeof candidate.email === "string" &&
+    Array.isArray(candidate.availabilityOptions) &&
+    typeof candidate.submitLabel === "string"
+  );
+}
+
+function collectProjectCards(parts: unknown): ProjectCardProps[] {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+
+  const cards: ProjectCardProps[] = [];
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") {
+      continue;
+    }
+
+    const toolPart = part as ToolPartLike;
+
+    if (toolPart.type === "tool-show_project_details") {
+      const payloadCandidates = [
+        toolPart.output,
+        toolPart.result,
+        toolPart.input,
+        toolPart.args,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isProjectCardPayload(candidate),
+      );
+
+      if (payload) {
+        cards.push(payload);
+      }
+      continue;
+    }
+
+    if (toolPart.type === "tool-invocation" && toolPart.toolName === "show_project_details") {
+      const payloadCandidates = [
+        toolPart.result,
+        toolPart.output,
+        toolPart.args,
+        toolPart.input,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isProjectCardPayload(candidate),
+      );
+
+      if (payload) {
+        cards.push(payload);
+      }
+    }
+  }
+
+  return cards;
+}
+
+function collectDeployedLinksCards(parts: unknown): DeployedLinksCardProps[] {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+
+  const cards: DeployedLinksCardProps[] = [];
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") {
+      continue;
+    }
+
+    const toolPart = part as ToolPartLike;
+
+    if (toolPart.type === "tool-show_deployed_links") {
+      const payloadCandidates = [
+        toolPart.output,
+        toolPart.result,
+        toolPart.input,
+        toolPart.args,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isDeployedLinksPayload(candidate),
+      );
+
+      if (payload) {
+        cards.push(payload);
+      }
+      continue;
+    }
+
+    if (toolPart.type === "tool-invocation" && toolPart.toolName === "show_deployed_links") {
+      const payloadCandidates = [
+        toolPart.result,
+        toolPart.output,
+        toolPart.args,
+        toolPart.input,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isDeployedLinksPayload(candidate),
+      );
+
+      if (payload) {
+        cards.push(payload);
+      }
+    }
+  }
+
+  const seen = new Set<string>();
+
+  return cards.filter((card) => {
+    const signature = JSON.stringify(card);
+
+    if (seen.has(signature)) {
+      return false;
+    }
+
+    seen.add(signature);
+    return true;
+  });
+}
+
+function collectContactWidgets(parts: unknown): ContactAvailabilityCardProps[] {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+
+  const widgets: ContactAvailabilityCardProps[] = [];
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") {
+      continue;
+    }
+
+    const toolPart = part as ToolPartLike;
+
+    if (toolPart.type === "tool-show_contact_widget") {
+      const payloadCandidates = [
+        toolPart.output,
+        toolPart.result,
+        toolPart.input,
+        toolPart.args,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isContactWidgetPayload(candidate),
+      );
+
+      if (payload) {
+        widgets.push(payload);
+      }
+      continue;
+    }
+
+    if (toolPart.type === "tool-invocation" && toolPart.toolName === "show_contact_widget") {
+      const payloadCandidates = [
+        toolPart.result,
+        toolPart.output,
+        toolPart.args,
+        toolPart.input,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isContactWidgetPayload(candidate),
+      );
+
+      if (payload) {
+        widgets.push(payload);
+      }
+    }
+  }
+
+  const seen = new Set<string>();
+
+  return widgets.filter((widget) => {
+    const signature = JSON.stringify(widget);
+    if (seen.has(signature)) {
+      return false;
+    }
+    seen.add(signature);
+    return true;
+  });
+}
+
+function collectText(parts: unknown) {
+  if (!Array.isArray(parts)) {
+    return "";
+  }
+
+  return parts
+    .filter(
+      (part): part is { type: "text"; text: string } =>
+        Boolean(part) &&
+        typeof part === "object" &&
+        (part as { type?: unknown }).type === "text" &&
+        typeof (part as { text?: unknown }).text === "string",
+    )
+    .map((part) => part.text)
+    .join("\n")
+    .trim();
+}
+
+function getPreviousUserQuestion(messages: Array<{ role: string; parts: unknown }>, index: number) {
+  for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+    const candidate = messages[cursor];
+    if (candidate.role !== "user") {
+      continue;
+    }
+
+    const text = collectText(candidate.parts);
+    if (text) {
+      return text;
+    }
+  }
+
+  return "";
+}
+
+function getSingleContactLine(locale: Locale) {
+  return locale === "fr"
+    ? "Vous pouvez me contacter à l'adresse suivante : contact@wesamdawod.com."
+    : "You can contact me at: contact@wesamdawod.com.";
+}
+
+function normalizeAssistantContactText(
+  rawText: string,
+  locale: Locale,
+  hasContactWidget: boolean,
+) {
+  const trimmed = rawText.trim();
+
+  if (!trimmed) {
+    return trimmed;
+  }
+
+  const hasEmail = trimmed.toLowerCase().includes("contact@wesamdawod.com");
+
+  // When the contact widget is present, keep one canonical contact sentence only.
+  if (hasContactWidget && hasEmail) {
+    return getSingleContactLine(locale);
+  }
+
+  if (!hasEmail && !hasContactWidget) {
+    return trimmed;
+  }
+
+  const normalizedWhitespace = trimmed.replace(/\s+/g, " ").trim();
+  const sentenceChunks = normalizedWhitespace
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  const emailSentence = sentenceChunks.find((sentence) =>
+    sentence.toLowerCase().includes("contact@wesamdawod.com"),
+  );
+
+  if (emailSentence) {
+    return emailSentence;
+  }
+
+  return getSingleContactLine(locale);
+}
+
 export function Hero() {
   const searchParams = useSearchParams();
   const [locale, setLocale] = useState<Locale>("en");
-  const [text, setText] = useState("");
+  const [input, setInput] = useState("");
   const [enableVisualFx, setEnableVisualFx] = useState(false);
+  const chatViewportRef = useRef<HTMLDivElement>(null);
   const copy = content[locale];
   const projects = getProjects(locale);
-  const {
-    completion,
-    isLoading,
-    handleInputChange,
-    handleSubmit,
-    setInput,
-  } = useCompletion({
-    api: "/api/completion",
-    body: { locale },
-    streamProtocol: "text",
-    onFinish: (_prompt, answer) => {
-      const cleanedAnswer = answer.replace(/<\/?answer>/g, "").trim();
-      setText(cleanedAnswer);
-    },
+  const { messages, status, sendMessage } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/completion",
+      body: { locale },
+    }),
     onError: (error) => toast.error(error.message),
   });
+  const isLoading = status === "submitted" || status === "streaming";
+
+  const scrollChatToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    if (!chatViewportRef.current) {
+      return;
+    }
+
+    chatViewportRef.current.scrollTo({
+      top: chatViewportRef.current.scrollHeight,
+      behavior,
+    });
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -306,9 +643,44 @@ export function Hero() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (!chatViewportRef.current) {
+      return;
+    }
+
+    scrollChatToBottom("smooth");
+  }, [messages, isLoading, scrollChatToBottom]);
+
+  useEffect(() => {
+    // Locale switch re-mounts the animated section; run a second pass after transition.
+    const rafId = requestAnimationFrame(() => {
+      scrollChatToBottom("auto");
+    });
+
+    const timeoutId = window.setTimeout(() => {
+      scrollChatToBottom("auto");
+    }, 240);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [locale, messages.length, scrollChatToBottom]);
+
   const handleSubmitWrapper = (event: FormEvent<HTMLFormElement>) => {
-    handleSubmit(event);
+    event.preventDefault();
+    const nextPrompt = input.trim();
+
+    if (!nextPrompt) {
+      return;
+    }
+
+    sendMessage({ text: nextPrompt });
     setInput("");
+  };
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setInput(event.target.value);
   };
 
   const handleLocaleChange = (nextLocale: Locale) => {
@@ -317,12 +689,11 @@ export function Hero() {
     }
 
     setLocale(nextLocale);
-    setText("");
     setInput("");
   };
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden px-5 pb-20 pt-5 sm:px-8 lg:px-12 lg:pb-24">
+    <main className="relative min-h-screen w-full overflow-hidden px-3 pb-20 pt-5 sm:px-8 lg:px-12 lg:pb-24">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(115,233,255,0.12),transparent_34%)]" />
         <div className="absolute left-1/2 top-0 h-80 w-80 -translate-x-1/2 rounded-full bg-[#73e9ff]/8 blur-3xl" />
@@ -420,7 +791,7 @@ export function Hero() {
 
             <section
               id="ask"
-              className="relative w-full overflow-hidden border border-white/10 bg-black/40 p-5 text-left shadow-[0_24px_80px_rgba(0,0,0,0.28)] sm:p-8"
+              className="relative w-full overflow-hidden border border-white/8 bg-black/40 p-4 text-left shadow-[0_24px_80px_rgba(0,0,0,0.28)] sm:border-white/10 sm:p-8"
             >
               <motion.div
                 key={`scan-${locale}`}
@@ -436,7 +807,7 @@ export function Hero() {
                 className="pointer-events-none absolute inset-0 origin-center bg-gradient-to-r from-transparent via-[#73e9ff]/12 to-transparent"
               />
 
-              <div className="flex flex-col items-center gap-3 border-b border-white/10 pb-5 text-center">
+              <div className="flex flex-col items-center gap-2 border-b border-white/8 pb-4 text-center sm:gap-3 sm:border-white/10 sm:pb-5">
                 <span className="font-display text-base text-[#73e9ff]">
                   <ScrambleText text={copy.askLabel} />
                 </span>
@@ -448,18 +819,129 @@ export function Hero() {
                 </p>
               </div>
 
-              <div className="mx-auto mt-6 max-w-3xl">
+              <div className="mx-auto mt-4 max-w-3xl sm:mt-6">
                 <motion.div
-                  key={`${locale}-${text || completion || "empty"}`}
+                  key={`${locale}-${messages.length}`}
                   initial={{ opacity: 0, filter: "blur(8px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.28, ease: "easeOut" }}
-                  className="mb-4 min-h-64 border border-white/10 bg-[#091018] px-4 py-4 text-left text-sm leading-7 text-[#d7e2ec] sm:px-5"
+                  className="mb-3 min-h-64 border border-white/8 bg-[#091018] px-3 py-3 text-left text-sm leading-7 text-[#d7e2ec] sm:mb-4 sm:border-white/10 sm:px-5 sm:py-4"
                 >
-                  {isLoading && completion.length > 0 ? (
-                    <p>{completion.replace(/<\/?answer>/g, "").trim()}</p>
-                  ) : text ? (
-                    <p>{text}</p>
+                  {messages.length > 0 ? (
+                    <div
+                      ref={chatViewportRef}
+                      className="max-h-[30rem] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(115,233,255,0.55)_rgba(255,255,255,0.07)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-white/[0.06] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#73e9ff]/70 [&::-webkit-scrollbar-thumb]:transition-colors [&::-webkit-scrollbar-thumb]:hover:bg-[#73e9ff] sm:space-y-3 sm:pr-2"
+                    >
+                      {messages.map((message, index) => {
+                        const textContent = collectText(message.parts);
+                        const cards = collectProjectCards(message.parts);
+                        const deployedLinksCards = collectDeployedLinksCards(message.parts);
+                        const contactWidgets = collectContactWidgets(message.parts);
+                        const isUser = message.role === "user";
+                        const previousUserQuestion = !isUser
+                          ? getPreviousUserQuestion(messages, index)
+                          : "";
+                        const fallbackCard =
+                          !isUser && cards.length === 0 && previousUserQuestion
+                            ? resolveProjectCardByQuestion(locale, previousUserQuestion)
+                            : null;
+                        const cardsToRender = fallbackCard ? [fallbackCard] : cards;
+                        const fallbackDeployedLinksCard =
+                          !isUser &&
+                          deployedLinksCards.length === 0 &&
+                          previousUserQuestion &&
+                          isDeployedLinksQuestion(previousUserQuestion)
+                            ? buildDeployedLinksCardData(locale)
+                            : null;
+                        const deployedLinksCardsToRender = fallbackDeployedLinksCard
+                          ? [fallbackDeployedLinksCard]
+                          : deployedLinksCards;
+                        const fallbackContactWidget =
+                          !isUser &&
+                          contactWidgets.length === 0 &&
+                          previousUserQuestion && isContactRelatedQuestion(previousUserQuestion)
+                            ? buildContactWidgetData(locale)
+                            : null;
+                        const contactWidgetsToRender = fallbackContactWidget
+                          ? [fallbackContactWidget]
+                          : contactWidgets;
+                        const displayText = isUser
+                          ? textContent
+                          : normalizeAssistantContactText(
+                              textContent,
+                              locale,
+                              contactWidgetsToRender.length > 0,
+                            );
+
+                        return (
+                          <div
+                            key={message.id}
+                            className={`space-y-1.5 sm:space-y-2 ${isUser ? "flex justify-end" : ""}`}
+                          >
+                            {displayText ? (
+                              <div
+                                className={`max-w-[94%] rounded-xl border px-3 py-2.5 leading-7 sm:max-w-[92%] sm:px-4 sm:py-3 ${
+                                  isUser
+                                    ? "border-[#73e9ff]/22 bg-[#0e1a25] text-[#d5ecff] sm:border-[#73e9ff]/28"
+                                    : "border-white/8 bg-[#0f1823] text-[#d7e2ec] sm:border-white/10"
+                                }`}
+                              >
+                                {displayText}
+                              </div>
+                            ) : null}
+
+                            {!isUser
+                              ? cardsToRender.map((card, cardIndex) => (
+                                  <ProjectCard
+                                    key={`${message.id}-${card.projectName}-${cardIndex}`}
+                                    projectName={card.projectName}
+                                    techStack={card.techStack}
+                                    role={card.role}
+                                    architectureDescription={card.architectureDescription}
+                                  />
+                                ))
+                              : null}
+
+                            {!isUser
+                              ? deployedLinksCardsToRender.map((card, cardIndex) => (
+                                  <DeployedLinksCard
+                                    key={`${message.id}-${card.title}-${cardIndex}`}
+                                    title={card.title}
+                                    links={card.links}
+                                    deploymentTitle={card.deploymentTitle}
+                                  />
+                                ))
+                              : null}
+
+                            {!isUser
+                              ? contactWidgetsToRender.map((widget, widgetIndex) => (
+                                  <ContactAvailabilityCard
+                                    key={`${message.id}-${widget.title}-${widgetIndex}`}
+                                    title={widget.title}
+                                    subtitle={widget.subtitle}
+                                    email={widget.email}
+                                    availabilityLabel={widget.availabilityLabel}
+                                    availabilityOptions={widget.availabilityOptions}
+                                    nameLabel={widget.nameLabel}
+                                    emailLabel={widget.emailLabel}
+                                    subjectLabel={widget.subjectLabel}
+                                    messageLabel={widget.messageLabel}
+                                    submitLabel={widget.submitLabel}
+                                    successMessage={widget.successMessage}
+                                    errorMessage={widget.errorMessage}
+                                  />
+                                ))
+                              : null}
+                          </div>
+                        );
+                      })}
+
+                      {isLoading ? (
+                        <p className="text-xs uppercase tracking-[0.22em] text-[#73e9ff]/70">
+                          Thinking...
+                        </p>
+                      ) : null}
+                    </div>
                   ) : (
                     <p className="text-white/42">{copy.emptyState}</p>
                   )}
@@ -477,7 +959,7 @@ export function Hero() {
               {copy.introNotes.map((note) => (
                 <article
                   key={note.label}
-                  className="border border-white/10 bg-white/[0.03] p-5 text-center"
+                  className="border border-white/10 bg-white/[0.03] p-4 text-center sm:p-5"
                 >
                   <p className="text-xs uppercase tracking-[0.24em] text-white/42">
                     {note.label}
@@ -493,7 +975,7 @@ export function Hero() {
               {copy.profileNotes.slice(0, 2).map((note) => (
                 <article
                   key={note.title}
-                  className="border border-white/10 bg-white/[0.03] p-6 text-left"
+                  className="border border-white/10 bg-white/[0.03] p-4 text-left sm:p-6"
                 >
                   <h2 className="font-display text-2xl leading-tight text-white">
                     <ScrambleText text={note.title} />
@@ -505,7 +987,7 @@ export function Hero() {
               ))}
             </section>
 
-            <section className="w-full border border-white/10 bg-black/30 p-5 text-left sm:p-6">
+            <section className="w-full border border-white/10 bg-black/30 p-4 text-left sm:p-6">
               <div className="flex flex-col items-center gap-3 border-b border-white/10 pb-4 text-center">
                 <p className="text-xs uppercase tracking-[0.28em] text-white/45">
                   <ScrambleText text={copy.projectsLabel} />
@@ -519,7 +1001,7 @@ export function Hero() {
                 {projects.map((project) => (
                   <Link
                     key={project.slug}
-                    className="group block border border-white/10 bg-white/[0.02] p-5 hover:border-[#73e9ff]/25 hover:bg-white/[0.04]"
+                    className="group block border border-white/10 bg-white/[0.02] p-4 hover:border-[#73e9ff]/25 hover:bg-white/[0.04] sm:p-5"
                     href={`/projects/${project.slug}${locale === "fr" ? "?lang=fr" : ""}`}
                   >
                     <div className="flex flex-col items-center gap-5 text-center sm:items-start sm:text-left">
