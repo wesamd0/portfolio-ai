@@ -26,9 +26,7 @@ export function isContactRelatedQuestion(question: string) {
     .replace(/\s+/g, " ")
     .trim();
 
-  return /(contact|email|mail|linkedin|github|reach out|reach me|how can i contact|how to contact|courriel|joindre|contacter|ecrire|me joindre)/.test(
-    q,
-  );
+  return /\b(contact|contact me|reach out|reach me|how can i contact|how do i contact|how to contact|email me|email address|courriel|joindre|contacter|ecrire|me joindre)\b/.test(q);
 }
 
 export function buildContactWidgetData(locale: Locale): ContactWidgetData {

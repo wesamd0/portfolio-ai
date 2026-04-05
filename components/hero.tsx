@@ -693,7 +693,7 @@ export function Hero() {
   };
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden px-5 pb-20 pt-5 sm:px-8 lg:px-12 lg:pb-24">
+    <main className="relative min-h-screen w-full overflow-hidden px-3 pb-20 pt-5 sm:px-8 lg:px-12 lg:pb-24">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(115,233,255,0.12),transparent_34%)]" />
         <div className="absolute left-1/2 top-0 h-80 w-80 -translate-x-1/2 rounded-full bg-[#73e9ff]/8 blur-3xl" />
@@ -791,7 +791,7 @@ export function Hero() {
 
             <section
               id="ask"
-              className="relative w-full overflow-hidden border border-white/10 bg-black/40 p-5 text-left shadow-[0_24px_80px_rgba(0,0,0,0.28)] sm:p-8"
+              className="relative w-full overflow-hidden border border-white/8 bg-black/40 p-4 text-left shadow-[0_24px_80px_rgba(0,0,0,0.28)] sm:border-white/10 sm:p-8"
             >
               <motion.div
                 key={`scan-${locale}`}
@@ -807,7 +807,7 @@ export function Hero() {
                 className="pointer-events-none absolute inset-0 origin-center bg-gradient-to-r from-transparent via-[#73e9ff]/12 to-transparent"
               />
 
-              <div className="flex flex-col items-center gap-3 border-b border-white/10 pb-5 text-center">
+              <div className="flex flex-col items-center gap-2 border-b border-white/8 pb-4 text-center sm:gap-3 sm:border-white/10 sm:pb-5">
                 <span className="font-display text-base text-[#73e9ff]">
                   <ScrambleText text={copy.askLabel} />
                 </span>
@@ -819,18 +819,18 @@ export function Hero() {
                 </p>
               </div>
 
-              <div className="mx-auto mt-6 max-w-3xl">
+              <div className="mx-auto mt-4 max-w-3xl sm:mt-6">
                 <motion.div
                   key={`${locale}-${messages.length}`}
                   initial={{ opacity: 0, filter: "blur(8px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.28, ease: "easeOut" }}
-                  className="mb-4 min-h-64 border border-white/10 bg-[#091018] px-4 py-4 text-left text-sm leading-7 text-[#d7e2ec] sm:px-5"
+                  className="mb-3 min-h-64 border border-white/8 bg-[#091018] px-3 py-3 text-left text-sm leading-7 text-[#d7e2ec] sm:mb-4 sm:border-white/10 sm:px-5 sm:py-4"
                 >
                   {messages.length > 0 ? (
                     <div
                       ref={chatViewportRef}
-                      className="max-h-[30rem] space-y-3 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(115,233,255,0.55)_rgba(255,255,255,0.07)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-white/[0.06] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#73e9ff]/70 [&::-webkit-scrollbar-thumb]:transition-colors [&::-webkit-scrollbar-thumb]:hover:bg-[#73e9ff] sm:pr-2"
+                      className="max-h-[30rem] space-y-2 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(115,233,255,0.55)_rgba(255,255,255,0.07)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-white/[0.06] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#73e9ff]/70 [&::-webkit-scrollbar-thumb]:transition-colors [&::-webkit-scrollbar-thumb]:hover:bg-[#73e9ff] sm:space-y-3 sm:pr-2"
                     >
                       {messages.map((message, index) => {
                         const textContent = collectText(message.parts);
@@ -859,8 +859,7 @@ export function Hero() {
                         const fallbackContactWidget =
                           !isUser &&
                           contactWidgets.length === 0 &&
-                          ((previousUserQuestion && isContactRelatedQuestion(previousUserQuestion)) ||
-                            textContent.toLowerCase().includes("contact@wesamdawod.com"))
+                          previousUserQuestion && isContactRelatedQuestion(previousUserQuestion)
                             ? buildContactWidgetData(locale)
                             : null;
                         const contactWidgetsToRender = fallbackContactWidget
@@ -877,14 +876,14 @@ export function Hero() {
                         return (
                           <div
                             key={message.id}
-                            className={`space-y-2 ${isUser ? "flex justify-end" : ""}`}
+                            className={`space-y-1.5 sm:space-y-2 ${isUser ? "flex justify-end" : ""}`}
                           >
                             {displayText ? (
                               <div
-                                className={`max-w-[92%] rounded-xl border px-4 py-3 leading-7 ${
+                                className={`max-w-[94%] rounded-xl border px-3 py-2.5 leading-7 sm:max-w-[92%] sm:px-4 sm:py-3 ${
                                   isUser
-                                    ? "border-[#73e9ff]/28 bg-[#0e1a25] text-[#d5ecff]"
-                                    : "border-white/10 bg-[#0f1823] text-[#d7e2ec]"
+                                    ? "border-[#73e9ff]/22 bg-[#0e1a25] text-[#d5ecff] sm:border-[#73e9ff]/28"
+                                    : "border-white/8 bg-[#0f1823] text-[#d7e2ec] sm:border-white/10"
                                 }`}
                               >
                                 {displayText}
@@ -960,7 +959,7 @@ export function Hero() {
               {copy.introNotes.map((note) => (
                 <article
                   key={note.label}
-                  className="border border-white/10 bg-white/[0.03] p-5 text-center"
+                  className="border border-white/10 bg-white/[0.03] p-4 text-center sm:p-5"
                 >
                   <p className="text-xs uppercase tracking-[0.24em] text-white/42">
                     {note.label}
@@ -976,7 +975,7 @@ export function Hero() {
               {copy.profileNotes.slice(0, 2).map((note) => (
                 <article
                   key={note.title}
-                  className="border border-white/10 bg-white/[0.03] p-6 text-left"
+                  className="border border-white/10 bg-white/[0.03] p-4 text-left sm:p-6"
                 >
                   <h2 className="font-display text-2xl leading-tight text-white">
                     <ScrambleText text={note.title} />
@@ -988,7 +987,7 @@ export function Hero() {
               ))}
             </section>
 
-            <section className="w-full border border-white/10 bg-black/30 p-5 text-left sm:p-6">
+            <section className="w-full border border-white/10 bg-black/30 p-4 text-left sm:p-6">
               <div className="flex flex-col items-center gap-3 border-b border-white/10 pb-4 text-center">
                 <p className="text-xs uppercase tracking-[0.28em] text-white/45">
                   <ScrambleText text={copy.projectsLabel} />
@@ -1002,7 +1001,7 @@ export function Hero() {
                 {projects.map((project) => (
                   <Link
                     key={project.slug}
-                    className="group block border border-white/10 bg-white/[0.02] p-5 hover:border-[#73e9ff]/25 hover:bg-white/[0.04]"
+                    className="group block border border-white/10 bg-white/[0.02] p-4 hover:border-[#73e9ff]/25 hover:bg-white/[0.04] sm:p-5"
                     href={`/projects/${project.slug}${locale === "fr" ? "?lang=fr" : ""}`}
                   >
                     <div className="flex flex-col items-center gap-5 text-center sm:items-start sm:text-left">
