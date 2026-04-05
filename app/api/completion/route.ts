@@ -7,6 +7,7 @@ import {
 } from "ai";
 import { Ratelimit } from "@upstash/ratelimit/dist/index.js";
 import { Redis } from "@upstash/redis";
+import { createShowDeployedLinksTool } from "@/lib/ai/deployed-links-tool";
 import { createShowProjectDetailsTool } from "@/lib/ai/project-tools";
 import { getProjects, type Locale } from "@/lib/projects";
 import resumeContextData from "@/lib/resume-context.json";
@@ -576,9 +577,22 @@ export async function POST(req: Request) {
   ) {
     const deterministicResult = streamText({
       model,
-      prompt: deterministicRouting.responseText,
+      prompt:
+        preferredLocale === "fr"
+          ? `Appelle l'outil show_deployed_links pour afficher les liens de deploiement de tous les projets dans une carte UI.
+Ne fournis pas de texte markdown long.`
+          : `Call the show_deployed_links tool to render deployment links for all projects in a UI card.
+Do not return long markdown text.`,
       temperature: 0,
-      maxOutputTokens: 220,
+      maxOutputTokens: 120,
+      tools: {
+        show_deployed_links: createShowDeployedLinksTool(preferredLocale),
+      },
+      toolChoice: {
+        type: "tool",
+        toolName: "show_deployed_links",
+      },
+      stopWhen: stepCountIs(2),
     });
 
     return deterministicResult.toUIMessageStreamResponse();
@@ -606,6 +620,7 @@ ${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and 
     maxOutputTokens: lowComplexity ? 120 : 350,
     tools: {
       show_project_details: createShowProjectDetailsTool(preferredLocale),
+      show_deployed_links: createShowDeployedLinksTool(preferredLocale),
     },
     stopWhen: stepCountIs(4),
     ...(modelMessages

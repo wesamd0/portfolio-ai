@@ -7,8 +7,13 @@ import { ArrowRight, Github, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { DeployedLinksCard, type DeployedLinksCardProps } from "@/components/deployed-links-card";
 import { ProjectCard, type ProjectCardProps } from "@/components/project-card";
-import { resolveProjectCardByQuestion } from "@/lib/ai/project-resolution";
+import {
+  buildDeployedLinksCardData,
+  isDeployedLinksQuestion,
+  resolveProjectCardByQuestion,
+} from "@/lib/ai/project-resolution";
 import { getProjects } from "@/lib/projects";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
@@ -274,6 +279,31 @@ function isProjectCardPayload(value: unknown): value is ProjectCardProps {
   );
 }
 
+function isDeployedLinksPayload(value: unknown): value is DeployedLinksCardProps {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  return (
+    typeof candidate.title === "string" &&
+    Array.isArray(candidate.links) &&
+    candidate.links.every((item) => {
+      if (!item || typeof item !== "object") {
+        return false;
+      }
+
+      const link = item as Record<string, unknown>;
+      return (
+        typeof link.projectName === "string" &&
+        typeof link.deployedUrl === "string" &&
+        (link.status === "live" || link.status === "coming-soon")
+      );
+    })
+  );
+}
+
 function collectProjectCards(parts: unknown): ProjectCardProps[] {
   if (!Array.isArray(parts)) {
     return [];
@@ -325,6 +355,70 @@ function collectProjectCards(parts: unknown): ProjectCardProps[] {
   }
 
   return cards;
+}
+
+function collectDeployedLinksCards(parts: unknown): DeployedLinksCardProps[] {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+
+  const cards: DeployedLinksCardProps[] = [];
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") {
+      continue;
+    }
+
+    const toolPart = part as ToolPartLike;
+
+    if (toolPart.type === "tool-show_deployed_links") {
+      const payloadCandidates = [
+        toolPart.output,
+        toolPart.result,
+        toolPart.input,
+        toolPart.args,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isDeployedLinksPayload(candidate),
+      );
+
+      if (payload) {
+        cards.push(payload);
+      }
+      continue;
+    }
+
+    if (toolPart.type === "tool-invocation" && toolPart.toolName === "show_deployed_links") {
+      const payloadCandidates = [
+        toolPart.result,
+        toolPart.output,
+        toolPart.args,
+        toolPart.input,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isDeployedLinksPayload(candidate),
+      );
+
+      if (payload) {
+        cards.push(payload);
+      }
+    }
+  }
+
+  const seen = new Set<string>();
+
+  return cards.filter((card) => {
+    const signature = JSON.stringify(card);
+
+    if (seen.has(signature)) {
+      return false;
+    }
+
+    seen.add(signature);
+    return true;
+  });
 }
 
 function collectText(parts: unknown) {
@@ -617,6 +711,7 @@ export function Hero() {
                       {messages.map((message, index) => {
                         const textContent = collectText(message.parts);
                         const cards = collectProjectCards(message.parts);
+                        const deployedLinksCards = collectDeployedLinksCards(message.parts);
                         const isUser = message.role === "user";
                         const previousUserQuestion = !isUser
                           ? getPreviousUserQuestion(messages, index)
@@ -626,6 +721,16 @@ export function Hero() {
                             ? resolveProjectCardByQuestion(locale, previousUserQuestion)
                             : null;
                         const cardsToRender = fallbackCard ? [fallbackCard] : cards;
+                        const fallbackDeployedLinksCard =
+                          !isUser &&
+                          deployedLinksCards.length === 0 &&
+                          previousUserQuestion &&
+                          isDeployedLinksQuestion(previousUserQuestion)
+                            ? buildDeployedLinksCardData(locale)
+                            : null;
+                        const deployedLinksCardsToRender = fallbackDeployedLinksCard
+                          ? [fallbackDeployedLinksCard]
+                          : deployedLinksCards;
 
                         return (
                           <div
@@ -645,13 +750,23 @@ export function Hero() {
                             ) : null}
 
                             {!isUser
-                              ? cardsToRender.map((card) => (
+                              ? cardsToRender.map((card, cardIndex) => (
                                   <ProjectCard
-                                    key={`${message.id}-${card.projectName}`}
+                                    key={`${message.id}-${card.projectName}-${cardIndex}`}
                                     projectName={card.projectName}
                                     techStack={card.techStack}
                                     role={card.role}
                                     architectureDescription={card.architectureDescription}
+                                  />
+                                ))
+                              : null}
+
+                            {!isUser
+                              ? deployedLinksCardsToRender.map((card, cardIndex) => (
+                                  <DeployedLinksCard
+                                    key={`${message.id}-${card.title}-${cardIndex}`}
+                                    title={card.title}
+                                    links={card.links}
                                   />
                                 ))
                               : null}

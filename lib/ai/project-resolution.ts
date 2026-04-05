@@ -7,6 +7,18 @@ export type ProjectCardData = {
   architectureDescription: string;
 };
 
+export type DeployedLinkItem = {
+  projectName: string;
+  deployedUrl: string;
+  status: "live" | "coming-soon";
+  liveLinkText?: string;
+};
+
+export type DeployedLinksCardData = {
+  title: string;
+  links: DeployedLinkItem[];
+};
+
 export const projectAliasesBySlug: Record<ProjectSlug, string[]> = {
   "distributed-mobile-cross-play-ecosystem": [
     "distributed architecture software evolution",
@@ -68,6 +80,13 @@ export function normalizeProjectText(value: string) {
     .replace(/[^a-z0-9\s]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+export function isDeployedLinksQuestion(question: string) {
+  const q = normalizeProjectText(question);
+  return /(deployed|deploye|deploi|live|project links|links of all|all .* projects|liens.*projets|projets.*deployes|tous.*projets)/.test(
+    q,
+  );
 }
 
 const normalizedAliasEntries = Object.entries(projectAliasesBySlug).flatMap(
@@ -141,4 +160,32 @@ export function resolveProjectByQuestion(locale: Locale, question: string) {
 export function resolveProjectCardByQuestion(locale: Locale, question: string): ProjectCardData | null {
   const project = resolveProjectByQuestion(locale, question);
   return project ? projectToCardData(project) : null;
+}
+
+export function buildDeployedLinksCardData(locale: Locale): DeployedLinksCardData {
+  const projects = getProjects(locale);
+  const comingSoonLabel = locale === "fr" ? "Bientot disponible" : "Coming soon";
+  const title =
+    locale === "fr"
+      ? "Liens de mes projets"
+      : "My project deployment links";
+
+
+  const links: DeployedLinkItem[] = projects.map((project) => {
+    const deployedUrl = project.deployedUrl ?? comingSoonLabel;
+    const status = project.deployedUrl ? "live" : "coming-soon";
+    const liveLinkText = locale === "fr" ? "Ouvrir le lien" : "Open live link";
+
+    return {
+      projectName: project.title,
+      deployedUrl,
+      status,
+      liveLinkText,
+    };
+  });
+
+  return {
+    title,
+    links,
+  };
 }
