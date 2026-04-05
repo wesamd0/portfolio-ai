@@ -68,11 +68,11 @@ Required for AI chat:
 Required for contact form email sending:
 
 - `RESEND_API_KEY`
-- `CONTACT_FROM_EMAIL` (must be a verified sender in Resend; for local testing you can use `Portfolio Contact <onboarding@resend.dev>`)
+- `CONTACT_FROM_EMAIL`
 
 Optional for contact form destination:
 
-- `CONTACT_RECEIVER_EMAIL` (defaults to `contact@wesamdawod.com` if omitted)
+- `CONTACT_RECEIVER_EMAIL`
 
 Optional for API rate limiting:
 
