@@ -3,9 +3,10 @@ import type { DeployedLinkItem } from "@/lib/ai/project-resolution";
 export type DeployedLinksCardProps = {
   title: string;
   links: DeployedLinkItem[];
+  deploymentTitle?: string;
 };
 
-export function DeployedLinksCard({ title, links }: DeployedLinksCardProps) {
+export function DeployedLinksCard({ title, links, deploymentTitle }: DeployedLinksCardProps) {
   return (
     <article className="relative overflow-hidden rounded-2xl border border-white/12 bg-[#0a121b] p-5 text-[#dce7f4] shadow-[0_20px_55px_rgba(0,0,0,0.34)] sm:p-6">
       <div className="pointer-events-none absolute -left-16 top-0 h-40 w-40 rounded-full bg-[#73e9ff]/10 blur-3xl" />
@@ -14,7 +15,7 @@ export function DeployedLinksCard({ title, links }: DeployedLinksCardProps) {
       <header className="mb-4 flex items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-white sm:text-xl">{title}</h3>
         <span className="rounded-full border border-[#73e9ff]/35 bg-[#73e9ff]/12 px-2.5 py-1 text-xs uppercase tracking-[0.12em] text-[#9cefff]">
-          Deployments
+          {deploymentTitle || "Deployments"}
         </span>
       </header>
 

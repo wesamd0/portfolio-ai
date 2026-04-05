@@ -767,6 +767,7 @@ export function Hero() {
                                     key={`${message.id}-${card.title}-${cardIndex}`}
                                     title={card.title}
                                     links={card.links}
+                                    deploymentTitle={card.deploymentTitle}
                                   />
                                 ))
                               : null}

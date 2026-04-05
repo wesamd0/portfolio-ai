@@ -12,11 +12,13 @@ export type DeployedLinkItem = {
   deployedUrl: string;
   status: "live" | "coming-soon";
   liveLinkText?: string;
+  deploymentTitle?: string;
 };
 
 export type DeployedLinksCardData = {
   title: string;
   links: DeployedLinkItem[];
+  deploymentTitle?: string;
 };
 
 export const projectAliasesBySlug: Record<ProjectSlug, string[]> = {
@@ -169,7 +171,7 @@ export function buildDeployedLinksCardData(locale: Locale): DeployedLinksCardDat
     locale === "fr"
       ? "Liens de mes projets"
       : "My project deployment links";
-
+  const deploymentTitle = locale === "fr" ? "Déploiements" : "Deployments";
 
   const links: DeployedLinkItem[] = projects.map((project) => {
     const deployedUrl = project.deployedUrl ?? comingSoonLabel;
@@ -187,5 +189,6 @@ export function buildDeployedLinksCardData(locale: Locale): DeployedLinksCardDat
   return {
     title,
     links,
+    deploymentTitle
   };
 }
