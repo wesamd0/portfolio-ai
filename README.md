@@ -65,6 +65,15 @@ Required for AI chat:
 
 - `GROQ_API_KEY`
 
+Required for contact form email sending:
+
+- `RESEND_API_KEY`
+- `CONTACT_FROM_EMAIL` (must be a verified sender in Resend; for local testing you can use `Portfolio Contact <onboarding@resend.dev>`)
+
+Optional for contact form destination:
+
+- `CONTACT_RECEIVER_EMAIL` (defaults to `contact@wesamdawod.com` if omitted)
+
 Optional for API rate limiting:
 
 - `KV_REST_API_URL`

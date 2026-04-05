@@ -7,6 +7,8 @@ import {
 } from "ai";
 import { Ratelimit } from "@upstash/ratelimit/dist/index.js";
 import { Redis } from "@upstash/redis";
+import { isContactRelatedQuestion } from "@/lib/ai/contact-widget";
+import { createShowContactWidgetTool } from "@/lib/ai/contact-tool";
 import { createShowDeployedLinksTool } from "@/lib/ai/deployed-links-tool";
 import { createShowProjectDetailsTool } from "@/lib/ai/project-tools";
 import { getProjects, type Locale } from "@/lib/projects";
@@ -598,6 +600,27 @@ Do not return long markdown text.`,
     return deterministicResult.toUIMessageStreamResponse();
   }
 
+  // Deterministic branch for explicit contact questions.
+  if (isContactRelatedQuestion(question)) {
+    const deterministicResult = streamText({
+      model,
+      prompt:
+        preferredLocale === "fr"
+          ? `Reponds en une phrase concise avec l'email de contact, puis appelle l'outil show_contact_widget.
+Ne donne pas de long bloc markdown.`
+          : `Answer in one concise sentence with the contact email, then call the show_contact_widget tool.
+Do not return a long markdown block.`,
+      temperature: 0,
+      maxOutputTokens: 120,
+      tools: {
+        show_contact_widget: createShowContactWidgetTool(preferredLocale),
+      },
+      stopWhen: stepCountIs(3),
+    });
+
+    return deterministicResult.toUIMessageStreamResponse();
+  }
+
   const messageInstruction =
     preferredLocale === "fr"
       ? `Answer in French unless the user explicitly asks otherwise.
@@ -621,6 +644,7 @@ ${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and 
     tools: {
       show_project_details: createShowProjectDetailsTool(preferredLocale),
       show_deployed_links: createShowDeployedLinksTool(preferredLocale),
+      show_contact_widget: createShowContactWidgetTool(preferredLocale),
     },
     stopWhen: stepCountIs(4),
     ...(modelMessages

@@ -7,8 +7,10 @@ import { ArrowRight, Github, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { ContactAvailabilityCard, type ContactAvailabilityCardProps } from "@/components/contact-availability-card";
 import { DeployedLinksCard, type DeployedLinksCardProps } from "@/components/deployed-links-card";
 import { ProjectCard, type ProjectCardProps } from "@/components/project-card";
+import { buildContactWidgetData, isContactRelatedQuestion } from "@/lib/ai/contact-widget";
 import {
   buildDeployedLinksCardData,
   isDeployedLinksQuestion,
@@ -304,6 +306,21 @@ function isDeployedLinksPayload(value: unknown): value is DeployedLinksCardProps
   );
 }
 
+function isContactWidgetPayload(value: unknown): value is ContactAvailabilityCardProps {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.title === "string" &&
+    typeof candidate.subtitle === "string" &&
+    typeof candidate.email === "string" &&
+    Array.isArray(candidate.availabilityOptions) &&
+    typeof candidate.submitLabel === "string"
+  );
+}
+
 function collectProjectCards(parts: unknown): ProjectCardProps[] {
   if (!Array.isArray(parts)) {
     return [];
@@ -421,6 +438,68 @@ function collectDeployedLinksCards(parts: unknown): DeployedLinksCardProps[] {
   });
 }
 
+function collectContactWidgets(parts: unknown): ContactAvailabilityCardProps[] {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+
+  const widgets: ContactAvailabilityCardProps[] = [];
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") {
+      continue;
+    }
+
+    const toolPart = part as ToolPartLike;
+
+    if (toolPart.type === "tool-show_contact_widget") {
+      const payloadCandidates = [
+        toolPart.output,
+        toolPart.result,
+        toolPart.input,
+        toolPart.args,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isContactWidgetPayload(candidate),
+      );
+
+      if (payload) {
+        widgets.push(payload);
+      }
+      continue;
+    }
+
+    if (toolPart.type === "tool-invocation" && toolPart.toolName === "show_contact_widget") {
+      const payloadCandidates = [
+        toolPart.result,
+        toolPart.output,
+        toolPart.args,
+        toolPart.input,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isContactWidgetPayload(candidate),
+      );
+
+      if (payload) {
+        widgets.push(payload);
+      }
+    }
+  }
+
+  const seen = new Set<string>();
+
+  return widgets.filter((widget) => {
+    const signature = JSON.stringify(widget);
+    if (seen.has(signature)) {
+      return false;
+    }
+    seen.add(signature);
+    return true;
+  });
+}
+
 function collectText(parts: unknown) {
   if (!Array.isArray(parts)) {
     return "";
@@ -453,6 +532,51 @@ function getPreviousUserQuestion(messages: Array<{ role: string; parts: unknown 
   }
 
   return "";
+}
+
+function getSingleContactLine(locale: Locale) {
+  return locale === "fr"
+    ? "Vous pouvez me contacter à l'adresse suivante : contact@wesamdawod.com."
+    : "You can contact me at: contact@wesamdawod.com.";
+}
+
+function normalizeAssistantContactText(
+  rawText: string,
+  locale: Locale,
+  hasContactWidget: boolean,
+) {
+  const trimmed = rawText.trim();
+
+  if (!trimmed) {
+    return trimmed;
+  }
+
+  const hasEmail = trimmed.toLowerCase().includes("contact@wesamdawod.com");
+
+  // When the contact widget is present, keep one canonical contact sentence only.
+  if (hasContactWidget && hasEmail) {
+    return getSingleContactLine(locale);
+  }
+
+  if (!hasEmail && !hasContactWidget) {
+    return trimmed;
+  }
+
+  const normalizedWhitespace = trimmed.replace(/\s+/g, " ").trim();
+  const sentenceChunks = normalizedWhitespace
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  const emailSentence = sentenceChunks.find((sentence) =>
+    sentence.toLowerCase().includes("contact@wesamdawod.com"),
+  );
+
+  if (emailSentence) {
+    return emailSentence;
+  }
+
+  return getSingleContactLine(locale);
 }
 
 export function Hero() {
@@ -712,6 +836,7 @@ export function Hero() {
                         const textContent = collectText(message.parts);
                         const cards = collectProjectCards(message.parts);
                         const deployedLinksCards = collectDeployedLinksCards(message.parts);
+                        const contactWidgets = collectContactWidgets(message.parts);
                         const isUser = message.role === "user";
                         const previousUserQuestion = !isUser
                           ? getPreviousUserQuestion(messages, index)
@@ -731,13 +856,30 @@ export function Hero() {
                         const deployedLinksCardsToRender = fallbackDeployedLinksCard
                           ? [fallbackDeployedLinksCard]
                           : deployedLinksCards;
+                        const fallbackContactWidget =
+                          !isUser &&
+                          contactWidgets.length === 0 &&
+                          ((previousUserQuestion && isContactRelatedQuestion(previousUserQuestion)) ||
+                            textContent.toLowerCase().includes("contact@wesamdawod.com"))
+                            ? buildContactWidgetData(locale)
+                            : null;
+                        const contactWidgetsToRender = fallbackContactWidget
+                          ? [fallbackContactWidget]
+                          : contactWidgets;
+                        const displayText = isUser
+                          ? textContent
+                          : normalizeAssistantContactText(
+                              textContent,
+                              locale,
+                              contactWidgetsToRender.length > 0,
+                            );
 
                         return (
                           <div
                             key={message.id}
                             className={`space-y-2 ${isUser ? "flex justify-end" : ""}`}
                           >
-                            {textContent ? (
+                            {displayText ? (
                               <div
                                 className={`max-w-[92%] rounded-xl border px-4 py-3 leading-7 ${
                                   isUser
@@ -745,7 +887,7 @@ export function Hero() {
                                     : "border-white/10 bg-[#0f1823] text-[#d7e2ec]"
                                 }`}
                               >
-                                {textContent}
+                                {displayText}
                               </div>
                             ) : null}
 
@@ -768,6 +910,26 @@ export function Hero() {
                                     title={card.title}
                                     links={card.links}
                                     deploymentTitle={card.deploymentTitle}
+                                  />
+                                ))
+                              : null}
+
+                            {!isUser
+                              ? contactWidgetsToRender.map((widget, widgetIndex) => (
+                                  <ContactAvailabilityCard
+                                    key={`${message.id}-${widget.title}-${widgetIndex}`}
+                                    title={widget.title}
+                                    subtitle={widget.subtitle}
+                                    email={widget.email}
+                                    availabilityLabel={widget.availabilityLabel}
+                                    availabilityOptions={widget.availabilityOptions}
+                                    nameLabel={widget.nameLabel}
+                                    emailLabel={widget.emailLabel}
+                                    subjectLabel={widget.subjectLabel}
+                                    messageLabel={widget.messageLabel}
+                                    submitLabel={widget.submitLabel}
+                                    successMessage={widget.successMessage}
+                                    errorMessage={widget.errorMessage}
                                   />
                                 ))
                               : null}
