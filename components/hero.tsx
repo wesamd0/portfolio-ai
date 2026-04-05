@@ -1,11 +1,14 @@
 "use client";
 
-import { useCompletion } from "@ai-sdk/react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Github, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { ProjectCard, type ProjectCardProps } from "@/components/project-card";
+import { resolveProjectCardByQuestion } from "@/lib/ai/project-resolution";
 import { getProjects } from "@/lib/projects";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
@@ -246,29 +249,145 @@ const localizedVariants = {
   }),
 };
 
+type ToolPartLike = {
+  type?: unknown;
+  input?: unknown;
+  output?: unknown;
+  args?: unknown;
+  result?: unknown;
+  toolName?: unknown;
+};
+
+function isProjectCardPayload(value: unknown): value is ProjectCardProps {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  return (
+    typeof candidate.projectName === "string" &&
+    Array.isArray(candidate.techStack) &&
+    candidate.techStack.every((item) => typeof item === "string") &&
+    typeof candidate.role === "string" &&
+    typeof candidate.architectureDescription === "string"
+  );
+}
+
+function collectProjectCards(parts: unknown): ProjectCardProps[] {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+
+  const cards: ProjectCardProps[] = [];
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") {
+      continue;
+    }
+
+    const toolPart = part as ToolPartLike;
+
+    if (toolPart.type === "tool-show_project_details") {
+      const payloadCandidates = [
+        toolPart.output,
+        toolPart.result,
+        toolPart.input,
+        toolPart.args,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isProjectCardPayload(candidate),
+      );
+
+      if (payload) {
+        cards.push(payload);
+      }
+      continue;
+    }
+
+    if (toolPart.type === "tool-invocation" && toolPart.toolName === "show_project_details") {
+      const payloadCandidates = [
+        toolPart.result,
+        toolPart.output,
+        toolPart.args,
+        toolPart.input,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isProjectCardPayload(candidate),
+      );
+
+      if (payload) {
+        cards.push(payload);
+      }
+    }
+  }
+
+  return cards;
+}
+
+function collectText(parts: unknown) {
+  if (!Array.isArray(parts)) {
+    return "";
+  }
+
+  return parts
+    .filter(
+      (part): part is { type: "text"; text: string } =>
+        Boolean(part) &&
+        typeof part === "object" &&
+        (part as { type?: unknown }).type === "text" &&
+        typeof (part as { text?: unknown }).text === "string",
+    )
+    .map((part) => part.text)
+    .join("\n")
+    .trim();
+}
+
+function getPreviousUserQuestion(messages: Array<{ role: string; parts: unknown }>, index: number) {
+  for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+    const candidate = messages[cursor];
+    if (candidate.role !== "user") {
+      continue;
+    }
+
+    const text = collectText(candidate.parts);
+    if (text) {
+      return text;
+    }
+  }
+
+  return "";
+}
+
 export function Hero() {
   const searchParams = useSearchParams();
   const [locale, setLocale] = useState<Locale>("en");
-  const [text, setText] = useState("");
+  const [input, setInput] = useState("");
   const [enableVisualFx, setEnableVisualFx] = useState(false);
+  const chatViewportRef = useRef<HTMLDivElement>(null);
   const copy = content[locale];
   const projects = getProjects(locale);
-  const {
-    completion,
-    isLoading,
-    handleInputChange,
-    handleSubmit,
-    setInput,
-  } = useCompletion({
-    api: "/api/completion",
-    body: { locale },
-    streamProtocol: "text",
-    onFinish: (_prompt, answer) => {
-      const cleanedAnswer = answer.replace(/<\/?answer>/g, "").trim();
-      setText(cleanedAnswer);
-    },
+  const { messages, status, sendMessage } = useChat({
+    transport: new DefaultChatTransport({
+      api: "/api/completion",
+      body: { locale },
+    }),
     onError: (error) => toast.error(error.message),
   });
+  const isLoading = status === "submitted" || status === "streaming";
+
+  const scrollChatToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    if (!chatViewportRef.current) {
+      return;
+    }
+
+    chatViewportRef.current.scrollTo({
+      top: chatViewportRef.current.scrollHeight,
+      behavior,
+    });
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -306,9 +425,44 @@ export function Hero() {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (!chatViewportRef.current) {
+      return;
+    }
+
+    scrollChatToBottom("smooth");
+  }, [messages, isLoading, scrollChatToBottom]);
+
+  useEffect(() => {
+    // Locale switch re-mounts the animated section; run a second pass after transition.
+    const rafId = requestAnimationFrame(() => {
+      scrollChatToBottom("auto");
+    });
+
+    const timeoutId = window.setTimeout(() => {
+      scrollChatToBottom("auto");
+    }, 240);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [locale, messages.length, scrollChatToBottom]);
+
   const handleSubmitWrapper = (event: FormEvent<HTMLFormElement>) => {
-    handleSubmit(event);
+    event.preventDefault();
+    const nextPrompt = input.trim();
+
+    if (!nextPrompt) {
+      return;
+    }
+
+    sendMessage({ text: nextPrompt });
     setInput("");
+  };
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setInput(event.target.value);
   };
 
   const handleLocaleChange = (nextLocale: Locale) => {
@@ -317,7 +471,6 @@ export function Hero() {
     }
 
     setLocale(nextLocale);
-    setText("");
     setInput("");
   };
 
@@ -450,16 +603,68 @@ export function Hero() {
 
               <div className="mx-auto mt-6 max-w-3xl">
                 <motion.div
-                  key={`${locale}-${text || completion || "empty"}`}
+                  key={`${locale}-${messages.length}`}
                   initial={{ opacity: 0, filter: "blur(8px)" }}
                   animate={{ opacity: 1, filter: "blur(0px)" }}
                   transition={{ duration: 0.28, ease: "easeOut" }}
                   className="mb-4 min-h-64 border border-white/10 bg-[#091018] px-4 py-4 text-left text-sm leading-7 text-[#d7e2ec] sm:px-5"
                 >
-                  {isLoading && completion.length > 0 ? (
-                    <p>{completion.replace(/<\/?answer>/g, "").trim()}</p>
-                  ) : text ? (
-                    <p>{text}</p>
+                  {messages.length > 0 ? (
+                    <div
+                      ref={chatViewportRef}
+                      className="max-h-[30rem] space-y-3 overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:rgba(115,233,255,0.55)_rgba(255,255,255,0.07)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-white/[0.06] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#73e9ff]/70 [&::-webkit-scrollbar-thumb]:transition-colors [&::-webkit-scrollbar-thumb]:hover:bg-[#73e9ff] sm:pr-2"
+                    >
+                      {messages.map((message, index) => {
+                        const textContent = collectText(message.parts);
+                        const cards = collectProjectCards(message.parts);
+                        const isUser = message.role === "user";
+                        const previousUserQuestion = !isUser
+                          ? getPreviousUserQuestion(messages, index)
+                          : "";
+                        const fallbackCard =
+                          !isUser && cards.length === 0 && previousUserQuestion
+                            ? resolveProjectCardByQuestion(locale, previousUserQuestion)
+                            : null;
+                        const cardsToRender = fallbackCard ? [fallbackCard] : cards;
+
+                        return (
+                          <div
+                            key={message.id}
+                            className={`space-y-2 ${isUser ? "flex justify-end" : ""}`}
+                          >
+                            {textContent ? (
+                              <div
+                                className={`max-w-[92%] rounded-xl border px-4 py-3 leading-7 ${
+                                  isUser
+                                    ? "border-[#73e9ff]/28 bg-[#0e1a25] text-[#d5ecff]"
+                                    : "border-white/10 bg-[#0f1823] text-[#d7e2ec]"
+                                }`}
+                              >
+                                {textContent}
+                              </div>
+                            ) : null}
+
+                            {!isUser
+                              ? cardsToRender.map((card) => (
+                                  <ProjectCard
+                                    key={`${message.id}-${card.projectName}`}
+                                    projectName={card.projectName}
+                                    techStack={card.techStack}
+                                    role={card.role}
+                                    architectureDescription={card.architectureDescription}
+                                  />
+                                ))
+                              : null}
+                          </div>
+                        );
+                      })}
+
+                      {isLoading ? (
+                        <p className="text-xs uppercase tracking-[0.22em] text-[#73e9ff]/70">
+                          Thinking...
+                        </p>
+                      ) : null}
+                    </div>
                   ) : (
                     <p className="text-white/42">{copy.emptyState}</p>
                   )}
