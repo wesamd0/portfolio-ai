@@ -10,7 +10,9 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent, type FormEv
 import { ContactAvailabilityCard, type ContactAvailabilityCardProps } from "@/components/contact-availability-card";
 import { DeployedLinksCard, type DeployedLinksCardProps } from "@/components/deployed-links-card";
 import { ProjectCard, type ProjectCardProps } from "@/components/project-card";
+import { SkillsWidgetCard, type SkillsWidgetCardProps } from "@/components/skills-widget-card";
 import { buildContactWidgetData, isContactRelatedQuestion } from "@/lib/ai/contact-widget";
+import { buildSkillsWidgetData, isGlobalSkillsOverviewQuestion } from "@/lib/ai/skills-widget";
 import {
   buildDeployedLinksCardData,
   isDeployedLinksQuestion,
@@ -321,6 +323,32 @@ function isContactWidgetPayload(value: unknown): value is ContactAvailabilityCar
   );
 }
 
+function isSkillsWidgetPayload(value: unknown): value is SkillsWidgetCardProps {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Record<string, unknown>;
+
+  return (
+    typeof candidate.title === "string" &&
+    typeof candidate.subtitle === "string" &&
+    Array.isArray(candidate.categories) &&
+    candidate.categories.every((category) => {
+      if (!category || typeof category !== "object") {
+        return false;
+      }
+
+      const typedCategory = category as Record<string, unknown>;
+      return (
+        typeof typedCategory.label === "string" &&
+        Array.isArray(typedCategory.items) &&
+        typedCategory.items.every((item) => typeof item === "string")
+      );
+    })
+  );
+}
+
 function collectProjectCards(parts: unknown): ProjectCardProps[] {
   if (!Array.isArray(parts)) {
     return [];
@@ -480,6 +508,68 @@ function collectContactWidgets(parts: unknown): ContactAvailabilityCardProps[] {
 
       const payload = payloadCandidates.find((candidate) =>
         isContactWidgetPayload(candidate),
+      );
+
+      if (payload) {
+        widgets.push(payload);
+      }
+    }
+  }
+
+  const seen = new Set<string>();
+
+  return widgets.filter((widget) => {
+    const signature = JSON.stringify(widget);
+    if (seen.has(signature)) {
+      return false;
+    }
+    seen.add(signature);
+    return true;
+  });
+}
+
+function collectSkillsWidgets(parts: unknown): SkillsWidgetCardProps[] {
+  if (!Array.isArray(parts)) {
+    return [];
+  }
+
+  const widgets: SkillsWidgetCardProps[] = [];
+
+  for (const part of parts) {
+    if (!part || typeof part !== "object") {
+      continue;
+    }
+
+    const toolPart = part as ToolPartLike;
+
+    if (toolPart.type === "tool-show_skills_widget") {
+      const payloadCandidates = [
+        toolPart.output,
+        toolPart.result,
+        toolPart.input,
+        toolPart.args,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isSkillsWidgetPayload(candidate),
+      );
+
+      if (payload) {
+        widgets.push(payload);
+      }
+      continue;
+    }
+
+    if (toolPart.type === "tool-invocation" && toolPart.toolName === "show_skills_widget") {
+      const payloadCandidates = [
+        toolPart.result,
+        toolPart.output,
+        toolPart.args,
+        toolPart.input,
+      ];
+
+      const payload = payloadCandidates.find((candidate) =>
+        isSkillsWidgetPayload(candidate),
       );
 
       if (payload) {
@@ -837,6 +927,7 @@ export function Hero() {
                         const cards = collectProjectCards(message.parts);
                         const deployedLinksCards = collectDeployedLinksCards(message.parts);
                         const contactWidgets = collectContactWidgets(message.parts);
+                        const skillsWidgets = collectSkillsWidgets(message.parts);
                         const isUser = message.role === "user";
                         const previousUserQuestion = !isUser
                           ? getPreviousUserQuestion(messages, index)
@@ -865,6 +956,17 @@ export function Hero() {
                         const contactWidgetsToRender = fallbackContactWidget
                           ? [fallbackContactWidget]
                           : contactWidgets;
+                        const fallbackSkillsWidget =
+                          !isUser &&
+                          skillsWidgets.length === 0 &&
+                          previousUserQuestion &&
+                          isGlobalSkillsOverviewQuestion(previousUserQuestion) &&
+                          !resolveProjectCardByQuestion(locale, previousUserQuestion)
+                            ? buildSkillsWidgetData(locale)
+                            : null;
+                        const skillsWidgetsToRender = fallbackSkillsWidget
+                          ? [fallbackSkillsWidget]
+                          : skillsWidgets;
                         const displayText = isUser
                           ? textContent
                           : normalizeAssistantContactText(
@@ -929,6 +1031,17 @@ export function Hero() {
                                     submitLabel={widget.submitLabel}
                                     successMessage={widget.successMessage}
                                     errorMessage={widget.errorMessage}
+                                  />
+                                ))
+                              : null}
+
+                            {!isUser
+                              ? skillsWidgetsToRender.map((widget, widgetIndex) => (
+                                  <SkillsWidgetCard
+                                    key={`${message.id}-${widget.title}-${widgetIndex}`}
+                                    title={widget.title}
+                                    subtitle={widget.subtitle}
+                                    categories={widget.categories}
                                   />
                                 ))
                               : null}
