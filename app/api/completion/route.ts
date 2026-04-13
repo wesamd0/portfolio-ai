@@ -11,6 +11,9 @@ import { isContactRelatedQuestion } from "@/lib/ai/contact-widget";
 import { createShowContactWidgetTool } from "@/lib/ai/contact-tool";
 import { createShowDeployedLinksTool } from "@/lib/ai/deployed-links-tool";
 import { createShowProjectDetailsTool } from "@/lib/ai/project-tools";
+import { resolveProjectByQuestion } from "@/lib/ai/project-resolution";
+import { createShowSkillsWidgetTool } from "@/lib/ai/skills-tool";
+import { isGlobalSkillsOverviewQuestion } from "@/lib/ai/skills-widget";
 import { getProjects, type Locale } from "@/lib/projects";
 import resumeContextData from "@/lib/resume-context.json";
 import type { Project, ProjectSlug } from "@/lib/projects";
@@ -53,6 +56,7 @@ Response rules:
 - When useful, cite concrete experience from the profile instead of speaking generically.
 - If the question is ambiguous, ask one concise clarification question.
 - If the user asks for details about a specific project and structured visualization helps, call the tool show_project_details.
+- If the user asks about skills/tech stack and a structured summary helps, call the tool show_skills_widget.
 `;
 
 const intentGuidance: Record<Intent, string> = {
@@ -183,6 +187,25 @@ function isPhoneNumberQuestion(question: string) {
   return /\b(phone|telephone|tel|phone number|telephone number|numero de telephone|num de telephone|numero|appeler|call)\b/.test(
     q,
   );
+}
+
+function shouldTriggerSkillsWidget(question: string, locale: Locale) {
+  if (!isGlobalSkillsOverviewQuestion(question)) {
+    return false;
+  }
+
+  const q = normalizeText(question);
+
+  // Explicit project mentions should stay in project-answer flow, even if "stack/skills" is present.
+  const mentionsProjectContext =
+    /\b(project|projects|projet|projets|portfolio|integrative|log2990|log3900|inf1900|robot|rpg)\b/.test(q) ||
+    Boolean(resolveProjectByQuestion(locale, question));
+
+  if (mentionsProjectContext) {
+    return false;
+  }
+
+  return true;
 }
 
 function detectQuestionLocale(question: string, fallbackLocale: Locale): Locale {
@@ -376,7 +399,7 @@ function buildPhoneRedirectResponse(locale: Locale) {
 }
 
 export type DeterministicRoutingResult = {
-  branch: "phone" | "deployed-links" | "none";
+  branch: "phone" | "deployed-links" | "skills" | "none";
   preferredLocale: Locale;
   responseText: string | null;
 };
@@ -400,6 +423,16 @@ export function resolveDeterministicRouting(
       branch: "deployed-links",
       preferredLocale,
       responseText: buildDeployedLinksResponse(preferredLocale),
+    };
+  }
+
+  if (shouldTriggerSkillsWidget(question, preferredLocale)) {
+    return {
+      branch: "skills",
+      preferredLocale,
+      responseText: preferredLocale === "fr"
+        ? "Voici un apercu structure de mes competences techniques."
+        : "Here is a structured snapshot of my technical skills.",
     };
   }
 
@@ -621,6 +654,30 @@ Do not return a long markdown block.`,
     return deterministicResult.toUIMessageStreamResponse();
   }
 
+  // Deterministic branch for explicit skills questions.
+  if (
+    deterministicRouting.branch === "skills" &&
+    deterministicRouting.responseText
+  ) {
+    const deterministicResult = streamText({
+      model,
+      prompt:
+        preferredLocale === "fr"
+          ? `Donne une phrase concise qui introduit les competences, puis appelle l'outil show_skills_widget.
+Ne donne pas de long bloc markdown.`
+          : `Give one concise sentence introducing the skills overview, then call the show_skills_widget tool.
+Do not return a long markdown block.`,
+      temperature: 0,
+      maxOutputTokens: 120,
+      tools: {
+        show_skills_widget: createShowSkillsWidgetTool(preferredLocale),
+      },
+      stopWhen: stepCountIs(3),
+    });
+
+    return deterministicResult.toUIMessageStreamResponse();
+  }
+
   const messageInstruction =
     preferredLocale === "fr"
       ? `Answer in French unless the user explicitly asks otherwise.
@@ -645,6 +702,7 @@ ${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and 
       show_project_details: createShowProjectDetailsTool(preferredLocale),
       show_deployed_links: createShowDeployedLinksTool(preferredLocale),
       show_contact_widget: createShowContactWidgetTool(preferredLocale),
+      show_skills_widget: createShowSkillsWidgetTool(preferredLocale),
     },
     stopWhen: stepCountIs(4),
     ...(modelMessages
