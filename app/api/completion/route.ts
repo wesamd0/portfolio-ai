@@ -1,6 +1,7 @@
 import { groq } from "@ai-sdk/groq";
 import {
   convertToModelMessages,
+  smoothStream,
   stepCountIs,
   streamText,
   type UIMessage,
@@ -600,6 +601,7 @@ export async function POST(req: Request) {
       prompt: deterministicRouting.responseText,
       temperature: 0,
       maxOutputTokens: 80,
+      experimental_transform: smoothStream(),
     });
 
     return deterministicResult.toUIMessageStreamResponse();
@@ -628,6 +630,7 @@ Do not return long markdown text.`,
         toolName: "show_deployed_links",
       },
       stopWhen: stepCountIs(2),
+      experimental_transform: smoothStream(),
     });
 
     return deterministicResult.toUIMessageStreamResponse();
@@ -649,6 +652,7 @@ Do not return a long markdown block.`,
         show_contact_widget: createShowContactWidgetTool(preferredLocale),
       },
       stopWhen: stepCountIs(3),
+      experimental_transform: smoothStream(),
     });
 
     return deterministicResult.toUIMessageStreamResponse();
@@ -673,6 +677,7 @@ Do not return a long markdown block.`,
         show_skills_widget: createShowSkillsWidgetTool(preferredLocale),
       },
       stopWhen: stepCountIs(3),
+      experimental_transform: smoothStream(),
     });
 
     return deterministicResult.toUIMessageStreamResponse();
@@ -705,6 +710,7 @@ ${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and 
       show_skills_widget: createShowSkillsWidgetTool(preferredLocale),
     },
     stopWhen: stepCountIs(4),
+    experimental_transform: smoothStream(),
     ...(modelMessages
       ? {
           messages: modelMessages,
