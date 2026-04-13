@@ -595,7 +595,7 @@ function collectText(parts: unknown) {
     return "";
   }
 
-  return parts
+  const fullText = parts
     .filter(
       (part): part is { type: "text"; text: string } =>
         Boolean(part) &&
@@ -606,6 +606,24 @@ function collectText(parts: unknown) {
     .map((part) => part.text)
     .join("\n")
     .trim();
+
+  const deltaText = parts
+    .filter(
+      (part): part is { type: "text-delta"; textDelta: string } =>
+        Boolean(part) &&
+        typeof part === "object" &&
+        (part as { type?: unknown }).type === "text-delta" &&
+        typeof (part as { textDelta?: unknown }).textDelta === "string",
+    )
+    .map((part) => part.textDelta)
+    .join("")
+    .trim();
+
+  if (fullText && deltaText) {
+    return fullText.length >= deltaText.length ? fullText : deltaText;
+  }
+
+  return fullText || deltaText;
 }
 
 function getPreviousUserQuestion(messages: Array<{ role: string; parts: unknown }>, index: number) {
@@ -634,6 +652,7 @@ function normalizeAssistantContactText(
   rawText: string,
   locale: Locale,
   hasContactWidget: boolean,
+  isContactQuestion: boolean,
 ) {
   const trimmed = rawText.trim();
 
@@ -641,9 +660,13 @@ function normalizeAssistantContactText(
     return trimmed;
   }
 
+  if (!isContactQuestion) {
+    return trimmed;
+  }
+
   const hasEmail = trimmed.toLowerCase().includes("contact@wesamdawod.com");
 
-  // When the contact widget is present, keep one canonical contact sentence only.
+  // When the contact widget is present, keep one contact sentence only.
   if (hasContactWidget && hasEmail) {
     return getSingleContactLine(locale);
   }
@@ -956,6 +979,10 @@ export function Hero() {
                         const contactWidgetsToRender = fallbackContactWidget
                           ? [fallbackContactWidget]
                           : contactWidgets;
+                        const isContactQuestion =
+                          !isUser &&
+                          Boolean(previousUserQuestion) &&
+                          isContactRelatedQuestion(previousUserQuestion);
                         const fallbackSkillsWidget =
                           !isUser &&
                           skillsWidgets.length === 0 &&
@@ -973,6 +1000,7 @@ export function Hero() {
                               textContent,
                               locale,
                               contactWidgetsToRender.length > 0,
+                              isContactQuestion,
                             );
 
                         return (
