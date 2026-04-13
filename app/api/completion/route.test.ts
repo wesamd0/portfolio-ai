@@ -99,6 +99,84 @@ describe("resolveDeterministicRouting - Deployed Links Branch", () => {
   });
 });
 
+describe("resolveDeterministicRouting - Skills Branch", () => {
+  it("routes skills questions to skills branch", () => {
+    const result = resolveDeterministicRouting(
+      "What are your technical skills?",
+      "en",
+    );
+
+    expect(result.branch).toBe("skills");
+    expect(result.preferredLocale).toBe("en");
+    expect(result.responseText).toContain("technical skills");
+  });
+
+  it("routes French skills questions to skills branch", () => {
+    const result = resolveDeterministicRouting(
+      "Quelles sont tes competences techniques?",
+      "en",
+    );
+
+    expect(result.branch).toBe("skills");
+    expect(result.preferredLocale).toBe("fr");
+    expect(result.responseText).toContain("competences techniques");
+  });
+
+  it("routes technology stack requests to skills branch", () => {
+    const result = resolveDeterministicRouting(
+      "Can you summarize your tech stack?",
+      "en",
+    );
+
+    expect(result.branch).toBe("skills");
+  });
+
+  it("routes 'what skills do you know' to skills branch", () => {
+    const result = resolveDeterministicRouting(
+      "What skills do you know?",
+      "en",
+    );
+
+    expect(result.branch).toBe("skills");
+  });
+
+  it("routes 'what skills did you use' to skills branch when no project is referenced", () => {
+    const result = resolveDeterministicRouting(
+      "What skills did you use?",
+      "en",
+    );
+
+    expect(result.branch).toBe("skills");
+  });
+
+  it("does not route project-specific stack question to skills branch", () => {
+    const result = resolveDeterministicRouting(
+      "What tech stack did you use for the multiplayer tactical RPG project?",
+      "en",
+    );
+
+    expect(result.branch).toBe("none");
+  });
+
+  it("does not route French project-specific skills question to skills branch", () => {
+    const result = resolveDeterministicRouting(
+      "Quelles technologies as-tu utilisees dans ton projet robot autonome?",
+      "fr",
+    );
+
+    expect(result.branch).toBe("none");
+  });
+
+  it("does not route precise single-skill question to skills branch", () => {
+    const result = resolveDeterministicRouting(
+      "Are you good with Python?",
+      "en",
+    );
+
+    expect(result.branch).toBe("none");
+  });
+});
+
 describe("resolveDeterministicRouting - None Branch", () => {
   it("returns none when no deterministic redirection is needed", () => {
     const result = resolveDeterministicRouting(
