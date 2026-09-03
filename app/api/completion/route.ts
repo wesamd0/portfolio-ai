@@ -527,7 +527,7 @@ const ratelimit =
       })
     : false;
 
-const model = groq("meta-llama/llama-4-scout-17b-16e-instruct");
+const model = groq("openai/gpt-oss-120b");
 
 function extractQuestionFromMessages(messages: UIMessage[]) {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
