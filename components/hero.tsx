@@ -63,6 +63,8 @@ const content = {
       "Ask about coursework, projects, tech stack, or the tradeoffs behind the systems below.",
     emptyState:
       "Start with what I am studying, how I build systems, or what I learned from the projects below.",
+    emptyResponseFallback:
+      "Sorry, I couldn't generate a response this time. Could you rephrase or try again?",
     placeholders: [
       "What are you studying at Polytechnique Montreal?",
       "What kind of projects do you like building?",
@@ -122,6 +124,8 @@ const content = {
       "Pose une question sur mon parcours, mes projets, mon stack technique ou les compromis derrière les systèmes ci-dessous.",
     emptyState:
       "Commence par mes études, ma façon de construire des systèmes ou ce que j'ai appris des projets ci-dessous.",
+    emptyResponseFallback:
+      "Désolé, je n'ai pas pu générer de réponse cette fois-ci. Pouvez-vous reformuler ou réessayer ?",
     placeholders: [
       "Qu'étudies-tu à Polytechnique Montreal ?",
       "Quel type de projets aimes-tu construire ?",
@@ -1001,6 +1005,15 @@ export function Hero() {
                               locale,
                               contactWidgetsToRender.length > 0,
                               isContactQuestion,
+                            ) || (
+                              // Safety net: never leave a finished assistant turn visually empty.
+                              !(isLoading && index === messages.length - 1) &&
+                              cardsToRender.length === 0 &&
+                              deployedLinksCardsToRender.length === 0 &&
+                              contactWidgetsToRender.length === 0 &&
+                              skillsWidgetsToRender.length === 0
+                                ? copy.emptyResponseFallback
+                                : ""
                             );
 
                         return (

@@ -1,10 +1,13 @@
 import { groq } from "@ai-sdk/groq";
 import {
   convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
   smoothStream,
   stepCountIs,
   streamText,
   type UIMessage,
+  type UIMessageStreamWriter,
 } from "ai";
 import { Ratelimit } from "@upstash/ratelimit/dist/index.js";
 import { Redis } from "@upstash/redis";
@@ -529,6 +532,93 @@ const ratelimit =
 
 const model = groq("openai/gpt-oss-120b");
 
+// gpt-oss-120b is a reasoning model: on Groq, hidden reasoning tokens count toward
+// `max_tokens`. With small budgets the model could spend the whole budget "thinking"
+// and return zero visible text (the chat then shows nothing). Keep reasoning light and
+// leave enough headroom for the visible answer; answer length is controlled by the prompt.
+const groqProviderOptions = {
+  groq: { reasoningEffort: "low" as const },
+};
+
+const TOKEN_BUDGET = {
+  deterministic: 600,
+  short: 800,
+  standard: 1500,
+} as const;
+
+type StreamTextResult = ReturnType<typeof streamText>;
+
+function getEmptyResponseFallback(locale: Locale) {
+  return locale === "fr"
+    ? "Désolé, je n'ai pas pu générer de réponse cette fois-ci. Pouvez-vous reformuler ou réessayer ?"
+    : "Sorry, I couldn't generate a response this time. Could you rephrase or try again?";
+}
+
+function writeStaticText(writer: UIMessageStreamWriter<UIMessage>, text: string) {
+  const id = crypto.randomUUID();
+  writer.write({ type: "text-start", id });
+  writer.write({ type: "text-delta", id, delta: text });
+  writer.write({ type: "text-end", id });
+}
+
+function staticTextResponse(text: string) {
+  const stream = createUIMessageStream<UIMessage>({
+    execute: ({ writer }) => {
+      writeStaticText(writer, text);
+    },
+  });
+
+  return createUIMessageStreamResponse({ stream });
+}
+
+/**
+ * Forwards the model stream to the client and guarantees the assistant message is never
+ * empty: if the model produced no visible text and no tool call (e.g. token budget
+ * exhausted by reasoning, provider hiccup), a localized fallback sentence is emitted.
+ */
+function streamWithFallback(result: StreamTextResult, locale: Locale) {
+  const stream = createUIMessageStream<UIMessage>({
+    execute: async ({ writer }) => {
+      let hasVisibleOutput = false;
+
+      const uiStream = result.toUIMessageStream({
+        sendReasoning: false,
+        sendFinish: false,
+        onError: (error) => {
+          console.error("[api/completion] model stream error:", error);
+          return getEmptyResponseFallback(locale);
+        },
+      });
+
+      for await (const chunk of uiStream) {
+        if (
+          (chunk.type === "text-delta" && chunk.delta.trim().length > 0) ||
+          chunk.type === "tool-input-available" ||
+          chunk.type === "tool-output-available" ||
+          chunk.type === "error"
+        ) {
+          hasVisibleOutput = true;
+        }
+
+        writer.write(chunk);
+      }
+
+      if (!hasVisibleOutput) {
+        console.warn("[api/completion] model returned an empty response; sending fallback.");
+        writeStaticText(writer, getEmptyResponseFallback(locale));
+      }
+
+      writer.write({ type: "finish" });
+    },
+    onError: (error) => {
+      console.error("[api/completion] stream error:", error);
+      return getEmptyResponseFallback(locale);
+    },
+  });
+
+  return createUIMessageStreamResponse({ stream });
+}
+
 function extractQuestionFromMessages(messages: UIMessage[]) {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index];
@@ -595,16 +685,9 @@ export async function POST(req: Request) {
   }
 
   // Deterministic branch for phone-number questions.
+  // The answer is fixed, so stream it directly instead of asking the model to "reply" to it.
   if (deterministicRouting.branch === "phone" && deterministicRouting.responseText) {
-    const deterministicResult = streamText({
-      model,
-      prompt: deterministicRouting.responseText,
-      temperature: 0,
-      maxOutputTokens: 80,
-      experimental_transform: smoothStream(),
-    });
-
-    return deterministicResult.toUIMessageStreamResponse();
+    return staticTextResponse(deterministicRouting.responseText);
   }
 
   // Deterministic branch for deployed links questions.
@@ -621,7 +704,8 @@ Ne fournis pas de texte markdown long.`
           : `Call the show_deployed_links tool to render deployment links for all projects in a UI card.
 Do not return long markdown text.`,
       temperature: 0,
-      maxOutputTokens: 120,
+      maxOutputTokens: TOKEN_BUDGET.deterministic,
+      providerOptions: groqProviderOptions,
       tools: {
         show_deployed_links: createShowDeployedLinksTool(preferredLocale),
       },
@@ -633,7 +717,7 @@ Do not return long markdown text.`,
       experimental_transform: smoothStream(),
     });
 
-    return deterministicResult.toUIMessageStreamResponse();
+    return streamWithFallback(deterministicResult, preferredLocale);
   }
 
   // Deterministic branch for explicit contact questions.
@@ -647,7 +731,8 @@ Ne donne pas de long bloc markdown.`
           : `Answer in one concise sentence with the contact email, then call the show_contact_widget tool.
 Do not return a long markdown block.`,
       temperature: 0,
-      maxOutputTokens: 120,
+      maxOutputTokens: TOKEN_BUDGET.deterministic,
+      providerOptions: groqProviderOptions,
       tools: {
         show_contact_widget: createShowContactWidgetTool(preferredLocale),
       },
@@ -655,7 +740,7 @@ Do not return a long markdown block.`,
       experimental_transform: smoothStream(),
     });
 
-    return deterministicResult.toUIMessageStreamResponse();
+    return streamWithFallback(deterministicResult, preferredLocale);
   }
 
   // Deterministic branch for explicit skills questions.
@@ -672,7 +757,8 @@ Ne donne pas de long bloc markdown.`
           : `Give one concise sentence introducing the skills overview, then call the show_skills_widget tool.
 Do not return a long markdown block.`,
       temperature: 0,
-      maxOutputTokens: 120,
+      maxOutputTokens: TOKEN_BUDGET.deterministic,
+      providerOptions: groqProviderOptions,
       tools: {
         show_skills_widget: createShowSkillsWidgetTool(preferredLocale),
       },
@@ -680,7 +766,7 @@ Do not return a long markdown block.`,
       experimental_transform: smoothStream(),
     });
 
-    return deterministicResult.toUIMessageStreamResponse();
+    return streamWithFallback(deterministicResult, preferredLocale);
   }
 
   const messageInstruction =
@@ -702,7 +788,8 @@ ${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and 
     model,
     system: systemPrompt,
     temperature: lowComplexity ? 0.2 : 0.4,
-    maxOutputTokens: lowComplexity ? 120 : 350,
+    maxOutputTokens: lowComplexity ? TOKEN_BUDGET.short : TOKEN_BUDGET.standard,
+    providerOptions: groqProviderOptions,
     tools: {
       show_project_details: createShowProjectDetailsTool(preferredLocale),
       show_deployed_links: createShowDeployedLinksTool(preferredLocale),
@@ -720,5 +807,5 @@ ${lowComplexity ? "For simple fact questions, answer in 1-2 short sentences and 
         }),
   });
 
-  return result.toUIMessageStreamResponse();
+  return streamWithFallback(result, preferredLocale);
 }
