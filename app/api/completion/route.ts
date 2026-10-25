@@ -546,7 +546,12 @@ const TOKEN_BUDGET = {
   standard: 1500,
 } as const;
 
-type StreamTextResult = ReturnType<typeof streamText>;
+// Only the UI-stream conversion is needed, so accept any tool set (avoids tool-type invariance).
+type UIStreamSource = {
+  toUIMessageStream: (
+    options?: Parameters<ReturnType<typeof streamText>["toUIMessageStream"]>[0],
+  ) => ReturnType<ReturnType<typeof streamText>["toUIMessageStream"]>;
+};
 
 function getEmptyResponseFallback(locale: Locale) {
   return locale === "fr"
@@ -576,7 +581,7 @@ function staticTextResponse(text: string) {
  * empty: if the model produced no visible text and no tool call (e.g. token budget
  * exhausted by reasoning, provider hiccup), a localized fallback sentence is emitted.
  */
-function streamWithFallback(result: StreamTextResult, locale: Locale) {
+function streamWithFallback(result: UIStreamSource, locale: Locale) {
   const stream = createUIMessageStream<UIMessage>({
     execute: async ({ writer }) => {
       let hasVisibleOutput = false;
